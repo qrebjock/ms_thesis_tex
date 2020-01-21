@@ -1,0 +1,264 @@
+\chapter{Sparse naive Bayes}\label{ch:snb}
+
+Naive Bayes was first introduced in the early 60s by~\cite{original_naive_bayes} for text documents classification.
+Despite its naive assumptions, naive Bayes remains an engaging model for large scale datasets because of its
+low complexity.
+An interesting propriety is that Naive Bayes can be trained online.
+It can be particularly helpful if the dataset doesn't fit in memory.
+
+\section{Reminders on vanilla naive Bayes}\label{sec:naive_bayes}
+
+\subsection{General settings}\label{subsec:nb_general}
+
+In this section, we recall briefly the naive Bayes model for binary classification.
+Most key results can naturally be extended to the multiple classes setting.
+Let $n$ and $p$ be two integers, $\mX \in \R^{n \times p}$ a feature matrix,
+and $\yy \in \left\{ -1, 1 \right\}^n$ the associated target vector.
+We will note the positive and the negative classes $\cC_+$ and $\cC_-$ respectively.
+We wish to explain $\yy$ given $\mX$, that is, finding the posterior probabilities $\Pr(\cC_\pm \mid \xx)$
+for any observed vector $\xx$.
+To do so, we combine the use of Bayes rule and make the (very) naive assumption that
+all the features are independent given the class, that is
+\[
+        \Pr\left( \xx \mid \cC_\pm \right) = \prod_{j = 1}^p \Pr(x_j \mid \cC_\pm)
+        ,\qquad
+        \Pr(\cC_\pm \mid \xx) = \frac{\Pr(\xx \mid \cC_\pm) \cdot \Pr(\cC_\pm)}{\Pr(\xx)}
+\]
+On the right hand side, the denominator $\Pr(\xx)$ does not depend on the class $\cC_\pm$ so we don't need to evaluate
+it in order to perform classification.
+Thus, we only need to estimate the probabilities $\Pr(\cC_\pm)$ and $\Pr(\xx \mid \cC_\pm)$.
+The former are simply data averages, or the frequency of the positive and negative classes in the observed data.
+As for the latter probabilities $\Pr\left( \xx \mid \cC_\pm \right) = \prod_{j = 1}^p \Pr(x_j \mid \cC_\pm)$,
+they can be modeled by a plethora of distribution families, depending on the prior knowledge we have on the data,
+and typically parametrized by some vector $\btheta \in \R^m$.
+The probabilities are usually computed by maximizing the likelihood $\cL$,
+or equivalently the log-likelihood $\lglh = \log\cL$, of the observed data.
+\[
+        \lglh\left( \btheta \right) = \sum_{i = 1}^n \Pr\left( \xx_i \mid y_i \,; \btheta \right)
+\]
+
+We present now 3 meaningful cases, where the prior distributions of $\Pr(\xx \mid \cC_\pm)$ are either
+gaussian, bernoulli or multinomial.
+Let $\cI_\pm = \left\{ i \in \pset \mid y_i = \cC_\pm \right\}$ be the sets of the positive and negative data points.
+We also note for each class $\cC_\pm$ their cardinalities, empirical sums and averages respectively, as follows:
+\begin{equation*}
+        n^\pm = | \cI_\pm |,
+        \qquad
+        \ff^\pm = \sum_{i \in \cI_\pm} \xx_i,
+        \qquad
+        \bmu^\pm = \frac{\ff^\pm}{n^\pm}
+\end{equation*}
+In the following examples, the time complexity to train a naive Bayes classifier is $\cO(n \cdot p)$.
+With a larger number of classes besides $\cC^+$ and $\cC^-$, say $k$, this complexity is multiplied by $k$.
+In comparison, no closed-form solution exist for logistic regression~\cite{logistic_regression} based classifications.
+A more costly gradient-descent based algorithm is executed to find the global optimum.
+
+\subsection{Gaussian naive Bayes}\label{subsec:gnb}
+
+In this case the observed data, conditioned on its label, is modeled by the gaussian distribution
+$\cN( \bmu^\pm, \mSigma^\pm )$.
+It is the most common case, to account for continuous data.
+Note that the covariance $\mSigma^\pm \in \R^{p \times p}$ is diagonal because of the independence assumption that we made.
+\[
+        \Pr\left( \xx \mid C_\pm \right) =
+        \frac{1}{\sqrt{(2\pi)^p\det(\mSigma_\pm)}}
+        \exp\left( -\frac{1}{2}(\xx - \bmu_\pm)^\top\mSigma^{-1}(\xx - \bmu_\pm) \right)
+\]
+By denoting $\sigma_j = \Sigma_{j j}$, the log-likelihood can be written
+\begin{equation*}
+        \begin{split}
+                \lglh\left( \bmu_+, \ssigma_+, \bmu_-, \ssigma_-\right ) &=
+                        \sum_{j = 1}^p \bigg[
+                                \sum_{i \in \cI_+}
+                                        -\frac{1}{2} \log \left( 2\pi \right)
+                                        -\log \sigma_j^+
+                                        -\frac{(x_j - \mu^+_j)^2}{2{\sigma^+_j}^2}\\
+                                &\qquad+ \sum_{i \in \cI_-}
+                                        -\frac{1}{2} \log \left( 2\pi \right)
+                                        -\log \sigma_j^-
+                                        -\frac{(x_j - \mu^-_j)^2}{2{\sigma^-_j}^2}
+                        \bigg]
+        \end{split}
+\end{equation*}
+The minimizer of $\lglh$ admits a closed-form solution:
+\begin{align*}
+        \bmu^\pm = \frac{\ff^\pm}{n^\pm}
+        ,\qquad
+        \ssigma^\pm = \sqrt{\frac{1}{n^\pm} \sum_{i \in \cI^\pm} (\xx_i - \bmu^\pm)^2}
+\end{align*}
+
+\subsection{Bernoulli naive Bayes}\label{subsec:bnb}
+
+Even though the Bernoulli case isn't very useful in practice, its solution is simple and elegant.
+Assume that the design matrix is binary, that is $\mX \in \left\{ 0, 1 \right\}^{n \times p}$.
+In order to model the conditional probabilities, we may assume the existence of $\btheta^+, \btheta^- \in \left( 0, 1 \right)^p$
+such that for any data point $\xx \in \R^p$,
+\[
+        \Pr\left( x_j \mid \cC_\pm \right) = (\theta^\pm_j)^{x_j} \cdot (1 - \theta^\pm_j)^{1 - x_j}
+\]
+It yields that $\log \Pr\left( \xx \mid \cC_\pm \right) =
+\xx^\top\log\btheta^\pm + (\1 - \xx)^\top\log\left( \1 - \btheta^\pm \right)$
+and finally
+\begin{align*}
+        \lglh\left( \btheta^+, \btheta^- \right)
+        &= \sum_{i \in \cI^+} \log \Pr\left( \xx_i \mid \cC_+ \right)
+                + \sum_{i \in \cI^-} \log \Pr\left( \xx_i \mid \cC_- \right)\\
+        \begin{split}
+                &= \ff_+^\top\log\btheta^+ + (n_+\1 - \ff_+)^\top\log\left( \1 - \btheta^+ \right)\\
+                &\qquad+ \ff_-^\top\log\btheta^- + (n_-\1 - \ff_-)^\top\log\left( \1 - \btheta^- \right)
+        \end{split}
+\end{align*}
+The independence assumption makes the optimization problem decomposable across features;
+it reduces to $p$ simple maximizations, and we find that $\theta_\pm^\star = \frac{f^\pm}{n^\pm}$.
+
+\subsection{Multinomial naive Bayes}\label{subsec:mnb}
+
+Multinomial naive Bayes is more general than the Bernoulli version
+as we suppose that $\mX \in \N^{n \times p}$ is generated by the following underlying distribution,
+parametrized by $\btheta^+, \btheta^- \in \left( 0, 1 \right)^p$ satisfying
+$\1^\top\btheta^+ = \1^\top\btheta^- = 1$:
+\[
+        \Pr\left( \xx \mid \cC_\pm \right) =
+                \frac{\big( \sum_{j = 1}^p x_j \big)!}
+                        {\prod_{j = 1}^p x_j!} \cdot \prod_{j = 1}^p \theta_\pm^{x_j}
+\]
+Note that this model can still be used in the more general case where $\mX \in \R_+$, so it is not as restrictive as
+it may appear at first sight.
+The log probability is given by
+\[
+        \log\Pr\left(\xx \mid \cC_\pm\right) =
+                \xx^\top\log\btheta_\pm + \log\frac{\big(\sum_{j = 1}^p x_j\big)!}{\prod_{j = 1}^p x_j!}
+\]
+and the log-likelihood reduces to
+\[
+        \lglh\left(\btheta^+, \btheta^-\right) = \ff_+^\top\log\btheta^+ + \ff_-^\top\log\btheta^-
+\]
+which is again decomposable across features.
+It turns out that $\btheta_\pm^\star = \frac{\ff^\pm}{\1^\top\ff^\pm}$.
+
+\subsection{Decision boundary}\label{subsec:nb_bound}
+
+Given a new data point $\xx \in \R^p$, we wish to attach it the most probable label
+$y \in \left\{ \cC^+,\, \cC^- \right\}$.
+No matter what model parametrized by $\btheta$ was chosen,
+\begin{align*}
+        y &= \sign \log \frac{\Pr(\cC^+ \mid \xx \,;\,\btheta)}{\Pr(\cC^- \mid \xx \,;\,\btheta)}\\
+        &= \sign\bigg[\log \frac{\Pr(\cC^+)}{\Pr(\cC^-)}
+                + \log \frac{\Pr(\xx \mid \cC^+)}{\Pr(\xx \mid \cC^-)}\bigg]
+\end{align*}
+In the cases of \emph{bernoulli} and \emph{multinomial} naive Bayes,
+there exist $v \in \R$ and $\ww \in \R^p$ such that $y = \sign(v + \ww^\top\xx)$.
+In both cases, $v$ has the same value, and by noting $\ww_b$ and $\ww_m$ the weights for the bernoulli
+and the multinomial case respectively, we have
+\begin{equation*}
+        v = \log\frac{\Pr(\cC^+)}{\Pr(\cC^-)}
+        ,\quad
+        \ww_b = \log(\btheta^+\odot(\1 - \btheta^-)) - \log(\btheta^-\odot(\1 - \btheta^+))
+        ,\quad
+        \ww_m = \log\btheta^+ - \log\btheta^-
+\end{equation*}
+
+
+\section{Sparse naive Bayes}\label{sec:snb}
+
+\subsection{Problem statement}\label{subsec:snb_ps}
+
+We detail here a sparse version of naive Bayes introduced by~\cite{sparse_naive_bayes} that can be employed to
+perform feature selection.
+Let $k \in \N$ be a desired level of sparsity.
+We wish to train a naive Bayes classifier whose decision boundary depends on at most $k$ features.
+For a vector $\vv \in \R^n$ we note $\norm{\vv}_0$ the number of non-zero entries
+(the cardinality of the vector).
+As shown in the previous section, for both bernoulli and multinomial naive Bayes,
+there exist $v \in \R$ and $\ww \in \R^p$ such that the prediction $y(\xx)$ of a new data point $\xx\in\R^p$ is
+$\sign(v + \ww^\top\xx)$.
+Furthermore, the $j$th entry of $\ww$ is null if and only if $\btheta^+_j = \btheta^-_j$.
+Note that the decision vector $w$ depends on the feature $p$ if and only if $\theta^+_p \neq \theta^-_p$
+The problem can be phrased as follows:
+
+\begin{equation*}
+        \begin{aligned}
+                & \underset{\btheta^+, \btheta^-}{\text{maximize}}
+                & & \lglh_\text{b}\left( \btheta^+, \btheta^- \right)\\
+                & \text{subject to}
+                & & \norm{\btheta^+ - \btheta^-}_0 \leq k.
+        \end{aligned}
+        \qquad\qquad
+        \begin{aligned}
+                & \underset{\btheta^+, \btheta^-}{\text{maximize}}
+                & & \lglh_\text{m}\left( \btheta^+, \btheta^- \right)\\
+                & \text{subject to}
+                & & \norm{\btheta^+ - \btheta^-}_0 \leq k\\
+                & \text{ and }
+                & & \1^\top\btheta^+ = \1^\top\btheta^- = 1.
+        \end{aligned}
+\end{equation*}
+
+\subsection{Main results and resolution}\label{subsec:snb_th}
+
+Surprisingly, despite the combinatorial constraints,
+this optimization problem can be (approximately) solved very efficiently,
+with an additional minor cost compared to vanilla naive Bayes.
+For the Bernoulli case especially, an optimal solution can be computed in closed-form.
+In the multinomial case, there is no closed-form solution, but a near-optimal one can easily be obtained.
+\begin{theorem}
+        Supposing that $X \in \left\{ 0, 1 \right\}^{n \times p}$ is modeled by the Bernoulli distribution,
+        an exact solution to the problem can be computed.
+        \begin{align*}
+                \vv &= (\ff^+ + \ff^-) \odot \log\left( \frac{\ff^+ + \ff^-}{n} \right)
+                        + (n\1 - \ff^+ - \ff^-) \odot \log\left( \1 - \frac{\ff^+ + \ff^-}{n} \right)\\
+                \begin{split}
+                        \ww &= \ff^+ \odot \log \frac{\ff^+}{n^+} + (n^+\1 - \ff^+) \odot \log (\1 - \frac{\ff^+}{n^+})\\
+                        &\qquad + \ff^- \odot \log \frac{\ff^-}{n^-} + (n^-\1 - \ff^-) \odot \log (\1 - \frac{\ff^-}{n^-})
+                \end{split}
+        \end{align*}
+        Let $\cI$ be the set of $p - k$ smallest elements of $\ww - \vv$, and let
+        \begin{equation*}
+                {\theta^+_\star}_j = {\theta^-_\star}_j = \frac{1}{n}(f_j^+ + f_j^-)
+                \;\forall j \in \cI
+                ,\qquad
+                {\theta^\pm_\star}_j = \frac{f^\pm_j}{n^\pm}
+                \;\forall j \notin \cI
+        \end{equation*}
+\end{theorem}
+
+\begin{theorem}
+Suppose that $\mX \in \R_+^{n \times p}$ is modeled by the multinomial distribution.
+We define $\phi_k : \alpha \mapsto s_k(\hh(\alpha)) + C$ where $C$ is some constant,
+$s_k$ is the sum of the k largest values of a vector, and
+\begin{equation*}
+        \begin{split}
+                \hh(\alpha) &= \ff_+ \odot \log \ff_+ + \ff_- \odot \log \ff_-
+                                - (\ff_+ + \ff_-) \odot \log (\ff_+ + \ff_-)\\
+                        &\qquad - \ff_+ \log \alpha - \ff_- \log (1 - \alpha)
+        \end{split}
+\end{equation*}
+Let $\alpha^\star$ be the minimizer of $\phi_k$, $\cI$ the set of the $p - k$ smallest entries of
+$\hh(\alpha^\star)$, and $B_\pm = \sum_{j \notin \cI} f_i^\pm$.
+A primal point can be reconstructed as follows:
+\[
+        {\theta^+_\star}_j = {\theta^-_\star}_j = \frac{f_j^+ + f_j^-}{\1^\top(\ff^+ + \ff^-)}
+        \;\forall j \in \cI
+        ,\quad
+        {\theta^\pm_\star}_j = \frac{B_+ + B_-}{B_\pm}\frac{f^\pm_j}{\1^\top(\ff^+ + \ff^-)}
+        \;\forall j \notin \cI
+\]
+Furthermore, it holds that $\psi(k - 4) \leq \phi(k) \leq \psi(k) \leq \phi(k + 4)$,
+implying that the duality gap is small if $\psi(k) - \psi(k - 4)$ is small.
+\end{theorem}
+Experimentally, the duality gap quickly converges to $0$ as $k$ increases,
+and the reconstructed primal point is near-optimal.
+The time complexity of sparse naive Bayes is in both cases $\cO(n \cdot p + p \cdot \log k)$,
+which is a minor additional cost compared to plain naive Bayes.
+
+The authors experiment their method on several text datasets,
+including \textsc{amzn}, \textsc{imdb}, \textsc{twtr}, \textsc{mpqa} and \textsc{sst2}.
+They obtain test accuracies competitive with more costly methods like the Lasso,
+while training their models several order of magnitude faster.
+
+\section{Applications}\label{sec:nb_app}
+
+The apparent low complexity of sparse naive Bayes compared to $\ell_1$-penalized methods such as
+Lasso, logistic regression or SVMs makes is appealing for very large scale datasets.
+We mention here a few applications to which we will come back later.
+

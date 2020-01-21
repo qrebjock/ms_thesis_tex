@@ -1,0 +1,352 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{epfml}[2018/01/09 v0.12 MLO Style File and Macros for Reports]
+%v0.11 add probability
+%v0.12 add diag; small fixed in comments/todonote
+%v0.13 add trace
+%v0.14 add bold 0,1 
+%v0.15 add dsfont package
+
+\newif\if@epfmlfinal\@epfmlfinalfalse
+\DeclareOption{final}{
+  \@epfmlfinaltrue
+}
+\newif\if@epfmlboxed\@epfmlboxedfalse
+\DeclareOption{boxed}{
+  \@epfmlboxedtrue
+}
+\newif\if@epfmlnoshade\@epfmlnoshadefalse
+\DeclareOption{noshade}{
+  \@epfmlnoshadetrue
+}
+
+\ProcessOptions\relax
+
+% math stuff
+\RequirePackage{amssymb,amsmath,amsthm,dsfont,graphicx}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{mathrsfs}
+\usepackage{placeins}
+\usepackage{wrapfig}
+
+
+\providecommand{\lin}[1]{\ensuremath{\left\langle #1 \right\rangle}}
+\providecommand{\abs}[1]{\left\lvert#1\right\rvert}
+\providecommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\providecommand{\refLE}[1]{\ensuremath{\stackrel{(\ref{#1})}{\leq}}}
+\providecommand{\refEQ}[1]{\ensuremath{\stackrel{(\ref{#1})}{=}}}
+\providecommand{\refGE}[1]{\ensuremath{\stackrel{(\ref{#1})}{\geq}}}
+\providecommand{\refID}[1]{\ensuremath{\stackrel{(\ref{#1})}{\equiv}}}
+
+  % basec sets
+  \providecommand{\R}{\mathbb{R}} % Reals
+  \providecommand{\N}{\mathbb{N}} % Naturals
+  
+  % random variables
+  \providecommand{\E}[1]{{\mathbb E}\left.#1\right. }        %expectation
+  \providecommand{\Eb}[1]{{\mathbb E}\left[#1\right] }       %expectation, with brackets
+  \providecommand{\EE}[2]{{\mathbb E}_{#1}\left.#2\right. }  %expectation  
+  \providecommand{\EEb}[2]{{\mathbb E}_{#1}\left[#2\right] } %expectation,  with brackets
+  \providecommand{\prob}[1]{{\rm Pr}\left[#1\right] } 
+  \providecommand{\Prob}[2]{{\rm Pr}_{#1}\left[#2\right] } 
+  \providecommand{\P}[1]{{\rm Pr}\left.#1\right. }
+  \providecommand{\Pb}[1]{{\rm Pr}\left[#1\right] }
+  \providecommand{\PP}[2]{{\rm Pr}_{#1}\left[#2\right] }
+  \providecommand{\PPb}[2]{{\rm Pr}_{#1}\left[#2\right] }
+
+  % operators
+  \DeclareMathOperator*{\argmin}{arg\,min}
+  \DeclareMathOperator*{\argmax}{arg\,max}
+  \DeclareMathOperator*{\supp}{supp}
+  \DeclareMathOperator*{\diag}{diag}
+  \DeclareMathOperator*{\Tr}{Tr}
+  \DeclareMathOperator*{\sign}{sign}
+  % bold vectors
+  \providecommand{\0}{\mathbf{0}}
+  \providecommand{\1}{\mathbf{1}}
+  \renewcommand{\aa}{\mathbf{a}}
+  \providecommand{\bb}{\mathbf{b}}
+  \providecommand{\cc}{\mathbf{c}}
+  \providecommand{\dd}{\mathbf{d}}
+  \providecommand{\ee}{\mathbf{e}}
+  \providecommand{\ff}{\mathbf{f}}
+  \let\ggg\gg
+  \renewcommand{\gg}{\mathbf{g}}
+  \providecommand{\hh}{\mathbf{h}}
+  \providecommand{\ii}{\mathbf{i}}
+  \providecommand{\jj}{\mathbf{j}}
+  \providecommand{\kk}{\mathbf{k}}
+  \let\lll\ll
+  \renewcommand{\ll}{\mathbf{l}}
+  \providecommand{\mm}{\mathbf{m}}
+  \providecommand{\nn}{\mathbf{n}}
+  \providecommand{\oo}{\mathbf{o}}
+  \providecommand{\pp}{\mathbf{p}}
+  \providecommand{\qq}{\mathbf{q}}
+  \providecommand{\rr}{\mathbf{r}}
+  \providecommand{\bs}{\mathbf{s}}
+  \providecommand{\tt}{\mathbf{t}}
+  \providecommand{\uu}{\mathbf{u}}
+  \providecommand{\vv}{\mathbf{v}}
+  \providecommand{\ww}{\mathbf{w}}
+  \providecommand{\xx}{\mathbf{x}}
+  \providecommand{\yy}{\mathbf{y}}
+  \providecommand{\zz}{\mathbf{z}}
+  \providecommand{\bbeta}{\bm{\beta}}
+  \providecommand{\bmu}{\bm{\mu}}
+  \providecommand{\btheta}{\bm{\theta}}
+  \providecommand{\ssigma}{\bm{\sigma}}
+
+  % bold matrices
+  \providecommand{\mA}{\mathbf{A}}
+  \providecommand{\mB}{\mathbf{B}}
+  \providecommand{\mC}{\mathbf{C}}
+  \providecommand{\mD}{\mathbf{D}}
+  \providecommand{\mE}{\mathbf{E}}
+  \providecommand{\mF}{\mathbf{F}}
+  \providecommand{\mG}{\mathbf{G}}
+  \providecommand{\mH}{\mathbf{H}}
+  \providecommand{\mI}{\mathbf{I}}
+  \providecommand{\mJ}{\mathbf{J}}
+  \providecommand{\mK}{\mathbf{K}}
+  \providecommand{\mL}{\mathbf{L}}
+  \providecommand{\mM}{\mathbf{M}}
+  \providecommand{\mN}{\mathbf{N}}
+  \providecommand{\mO}{\mathbf{O}}
+  \providecommand{\mP}{\mathbf{P}}
+  \providecommand{\mQ}{\mathbf{Q}}
+  \providecommand{\mR}{\mathbf{R}}
+  \providecommand{\mS}{\mathbf{S}}
+  \providecommand{\mT}{\mathbf{T}}
+  \providecommand{\mU}{\mathbf{U}}
+  \providecommand{\mV}{\mathbf{V}}
+  \providecommand{\mW}{\mathbf{W}}
+  \providecommand{\mX}{\mathbf{X}}
+  \providecommand{\mY}{\mathbf{Y}}
+  \providecommand{\mZ}{\mathbf{Z}}
+  \providecommand{\mSigma}{\bm{\Sigma}}
+  \providecommand{\mLambda}{\bm{\Lambda}}
+  \providecommand{\mTheta}{\bm{\Theta}}
+
+  % caligraphic
+  \providecommand{\cA}{\mathcal{A}}
+  \providecommand{\cB}{\mathcal{B}}
+  \providecommand{\cC}{\mathcal{C}}
+  \providecommand{\cD}{\mathcal{D}}
+  \providecommand{\cE}{\mathcal{E}}
+  \providecommand{\cF}{\mathcal{F}}
+  \providecommand{\cG}{\mathcal{G}}
+  \providecommand{\cH}{\mathcal{H}}
+  \providecommand{\cI}{\mathcal{I}}
+  \providecommand{\cJ}{\mathcal{J}}
+  \providecommand{\cK}{\mathcal{K}}
+  \providecommand{\cL}{\mathcal{L}}
+  \providecommand{\cM}{\mathcal{M}}
+  \providecommand{\cN}{\mathcal{N}}
+  \providecommand{\cO}{\mathcal{O}}
+  \providecommand{\cP}{\mathcal{P}}
+  \providecommand{\cQ}{\mathcal{Q}}
+  \providecommand{\cR}{\mathcal{R}}
+  \providecommand{\cS}{\mathcal{S}}
+  \providecommand{\cT}{\mathcal{T}}
+  \providecommand{\cU}{\mathcal{U}}
+  \providecommand{\cV}{\mathcal{V}}
+  \providecommand{\cX}{\mathcal{X}}
+  \providecommand{\cY}{\mathcal{Y}}
+  \providecommand{\cW}{\mathcal{W}}
+  \providecommand{\cZ}{\mathcal{Z}}
+
+
+  \providecommand{\tX}{\tilde{X}}
+  \providecommand{\tcX}{\tilde{\cX}}
+  \providecommand{\tmX}{\tilde{\mX}}
+  \providecommand{\fdp}{\text{FDP}}
+  \providecommand{\fdr}{\text{FDR}}
+  \providecommand{\mfdr}{\text{mFDR}}
+  \providecommand{\power}{\text{power}}
+  \providecommand{\fset}{\left\{ 1, \dots, p \right\}}
+  \providecommand{\pset}{\left\{ 1, \dots, n \right\}}
+  \providecommand{\zoset}{\left\{ 0,\, 1 \right\}}
+  \providecommand{\lglh}{\cL\cL}
+  \providecommand{\distreq}{\stackrel{d}{=}}
+  \providecommand{\fdrtarget}{q}
+  \providecommand{\pvalue}{p}
+
+
+% theorem style
+\RequirePackage{thmtools}
+% \RequirePackage[dvipsnames]{xcolor}
+
+
+\definecolor{shadecolorr}{gray}{0.95}
+\newcommand{\@thmshade}{white}
+
+\if@epfmlfinal
+\else
+  \if@epfmlnoshade
+  \else
+    \renewcommand{\@thmshade}{shadecolorr}
+  \fi
+\fi
+
+
+\if@epfmlboxed
+  \newcommand{\@thmrulecolor}{black}
+  \newcommand{\@thmrulewidth}{1pt}
+\else
+  \newcommand{\@thmrulecolor}{white}
+  \newcommand{\@thmrulewidth}{0pt}
+\fi
+
+% \RequirePackage{cleveref}
+
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Theorem,refname={theorem,theorems},Refname={Theorem,Theorems}]{theorem}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Lemma,sibling=theorem,refname={lemma,lemmas},Refname={Lemma,Lemmas}]{lemma}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Corollary,sibling=theorem,refname={corollary,corollaries},Refname={Corollary,Corollaries}]{corollary}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Proposition,sibling=theorem,refname={proposition,propositions},Refname={Proposition,Propositions}]{proposition}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Remark,sibling=theorem,refname={remark,Remark},Refname={Remark,Remarks}]{remark}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Assumption,refname={assumption,assumptions},Refname={Assumption,Assumptions}]{assumption}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Definition,refname={definition,definitions},Refname={Definition,Definitions}]{definition}
+\declaretheorem[shaded={bgcolor=\@thmshade,rulecolor=\@thmrulecolor,rulewidth=\@thmrulewidth},name=Example,sibling=theorem,refname={example,examples},Refname={Example,Examples}]{example}
+
+% calculate print time
+\RequirePackage{calc}
+\newcounter{@hours}
+\newcounter{@minutes}
+\newcommand{\@printtime}{%
+\setcounter{@hours}{\time/60}%
+\setcounter{@minutes}{\time - \value{@hours}*60}%
+\the@hours :%
+\ifnum\value{@minutes}<10 0\fi%
+\the@minutes h}
+
+% define header
+\if@epfmlfinal
+  \newcommand{\epfml@doctype}{MLO DISCUSSION PAPER}
+  \newcommand{\epfml@versionstring}{MLO Lab EPFL, \texttt{mlo.epfl.ch}}
+\else
+  \newcommand{\epfml@doctype}{MLO Research Notes}
+  \newcommand{\epfml@versionstring}{MLO Lab EPFL, File: {\sl \jobname}, Printout: \today, \@printtime}
+
+\fi
+% create title
+\providecommand{\maketitle}{}
+\renewcommand{\maketitle}{%
+  \par
+  \begingroup
+    \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+    % for perfect author name centering
+    \renewcommand{\@makefnmark}{\hbox to \z@{$^{\@thefnmark}$\hss}}
+    % The footnote-mark was overlapping the footnote-text,
+    % added the following to fix this problem               (MK)
+    \long\def\@makefntext##1{%
+      \parindent 1em\noindent
+      \hbox to 1.8em{\hss $\m@th ^{\@thefnmark}$}##1
+    }
+    \thispagestyle{empty}
+    \@maketitle
+    \@thanks
+	\@notice
+  \endgroup
+  \let\maketitle\relax
+  \let\thanks\relax
+  \let\@date\@empty
+  \let\date\relax
+}
+
+\providecommand{\@maketitle}{}
+\renewcommand{\@maketitle}{%
+  \vbox{%
+    \hsize\textwidth
+    \linewidth\hsize
+    \centering
+	{\normalsize \epfml@doctype\par}
+	{\normalsize \@date\par}
+	\vskip10mm%
+    {\LARGE\bf \@title\par}
+	\vskip5mm%
+    \def\And{%
+      \end{tabular}\hfil\linebreak[0]\hfil%
+      \begin{tabular}[t]{c}\rule{\z@}{24\p@}\ignorespaces%
+    }
+    \def\AND{%
+      \end{tabular}\hfil\linebreak[4]\hfil%
+      \begin{tabular}[t]{c}\rule{\z@}{24\p@}\ignorespaces%
+    }
+    \begin{tabular}[t]{c}\rule{\z@}{24\p@}\@author\end{tabular}%  add \bf before rule
+    \vskip5mm%
+  }
+}
+
+% add version notice to bottom of first page
+\newcommand{\ftype@noticebox}{8}
+\newcommand{\@notice}{%
+  \@float{noticebox}[b]%
+    \footnotesize\epfml@versionstring%
+  \end@float%
+}
+
+% Commenting
+\RequirePackage[colorinlistoftodos,bordercolor=orange,backgroundcolor=orange!20,linecolor=orange,textsize=scriptsize]{todonotes}
+\if@epfmlfinal
+  \providecommand{\comment}[2]{}%
+\else
+  \providecommand{\comment}[2]{\todo[inline,caption={}]{\textbf{#1: }#2}}%
+\fi
+\RequirePackage{color}
+\newcounter{@comcolor}
+\newcommand{\@colstring}{red}
+\newcommand{\@getnewcolor}{%
+\ifnum \the@comcolor=0%
+  \renewcommand{\@colstring}{red}%
+\fi\ifnum \the@comcolor=1%
+  \renewcommand{\@colstring}{blue}%  
+\fi\ifnum \the@comcolor=2%
+  \renewcommand{\@colstring}{violet}%  
+  \fi\ifnum \the@comcolor=3%
+  \renewcommand{\@colstring}{orange}%  
+\fi\ifnum \the@comcolor=4%
+  \renewcommand{\@colstring}{purple}%  
+  \fi\ifnum \the@comcolor=5%
+  \renewcommand{\@colstring}{magenta}%  
+\fi\ifnum \the@comcolor=6%
+  \renewcommand{\@colstring}{cyan}%  
+  \fi\ifnum \the@comcolor=7%
+  \renewcommand{\@colstring}{brown}%  
+\fi\ifnum \the@comcolor=8%
+  \renewcommand{\@colstring}{teal}%  
+  \fi\ifnum \the@comcolor=9%
+  \renewcommand{\@colstring}{olive}%  
+\fi\ifnum \the@comcolor=10%
+  \renewcommand{\@colstring}{red}%    
+\fi%
+\stepcounter{@comcolor}
+}
+\if@epfmlfinal
+  \providecommand{\inlinecomment}[3]{}%
+\else
+  \providecommand{\inlinecomment}[3]{%
+  %\@getnewcolor%
+  %\edef\@tempa{\@colstring}%
+  {\color{#1}#2: #3}}%
+\fi
+
+\newcommand\commenter[2]%
+{%
+  \expandafter\newcommand\csname i#1\endcsname[1]{\inlinecomment{#2}{#1}{##1}}
+  \expandafter\newcommand\csname #1\endcsname[1]{\comment{#1}{##1}}
+}
+
+\renewenvironment{abstract}{%
+      \if@twocolumn
+        \section*{\abstractname}%
+      \else
+        \small
+        \begin{center}%
+          {\bfseries \abstractname\vspace{-.5em}\vspace{\z@}}%
+        \end{center}%
+        \quotation
+      \fi}
+      {\if@twocolumn\else\endquotation\fi}
+\endinput

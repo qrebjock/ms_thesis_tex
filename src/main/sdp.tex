@@ -1,0 +1,61 @@
+\chapter{SDP}\label{ch:sdp}
+
+In the case of gaussian knockoffs,
+or more generally when we only impose $\left(\mX, \tilde{\mX}\right)_{\swap\left( S \right)}$ to have the same distribution
+as $\left(\mX, \tilde{\mX}\right)$ for any subset $S \subseteq \left\{ 1, \dots, p \right\}$
+
+\[
+\left(\begin{array}{@{}cc@{}}
+  \mathbf{\Sigma}
+  & \mathbf{\Sigma} - \diag \bs\\
+  \mathbf{\Sigma} - \diag \bs
+  & \mathbf{\Sigma}
+\end{array}\right)
+\]
+
+This matrix is positive semi definite if and only if $\diag \bs \preceq 2 \mSigma$.
+
+\section{Equi-correlated knockoffs}\label{sec:equi}
+
+A fast and easy way to find a suitable $\bs$ is to pick $s_j = \min(2\lambda_{\text{min}}(\mSigma), 1) \,\forall j$.
+
+\section{SDP knockoffs}\label{sec:sdp}
+
+
+It motivates us to solve the following optimization problem in order to
+
+\begin{equation*}\label{eq:sdp}
+\begin{aligned}
+    & \underset{\bs}{\text{maximize}}
+    & & \sum_{j = 1}^p s_j\\
+    & \text{subject to}
+    & & 0 \leq s_j \leq 1 \forall j\\
+    & & \diag \bs \preceq 2 \mSigma
+\end{aligned}
+\end{equation*}
+
+This problem is a structured semidefinite program (SDP) and can efficiently be solved for small values of p by interior point method for
+example (\cite{interior_point_method_sdp}).
+For larger values of $p$, it quickly becomes intractable and other methods must be considered.
+Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below to reduce the computation time.
+
+\paragraph*{Step 1.}
+Pick an approximation $\mathbf{\Sigma_\text{approx}}$ of $\mSigma$ and solve
+\[
+    \text{minimize} \sum_{j = 1}^p (1 - \hat{s}_j)
+    \quad\text{subject to}\quad
+    0 \leq \hat{s}_j \leq 1, \diag{\hat{s}} \preceq 2\mathbf{\Sigma_\text{approx}}
+\]
+\paragraph*{Step 2.}
+Solve
+\[
+    \text{maximize}\;\gamma
+    \quad\text{subject to}\quad
+    \diag\left\{\gamma\hat{s}\right\} \preceq 2\mathbf{\Sigma}
+\]
+Finally, pick $s = \gamma \hat{s}$.
+
+Note that $\mathbf{\Sigma_\text{approx}} = \mathbf{I}$ and $\mathbf{\Sigma_\text{approx}} = \mathbf{\Sigma}$ yield
+the last two solutions.
+The step 2 can be solved very efficiently using bisection as it is a one-dimensional SDP\@.
+Finding the right  $\mathbf{\Sigma_\text{approx}}$ is a compromise between computation time and power.

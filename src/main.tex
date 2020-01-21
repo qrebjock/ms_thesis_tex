@@ -1,0 +1,107 @@
+%! Author = Quentin
+%! Date = 12/01/2020
+
+\documentclass[
+11pt, % The default document font size, options: 10pt, 11pt, 12pt
+%oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
+english, % ngerman for German
+singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing
+%draft, % Uncomment to enable draft mode (no pictures, no links, overfull hboxes indicated)
+%nolistspacing, % If the document is onehalfspacing or doublespacing, uncomment this to set spacing in lists to single
+%liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
+%toctotoc, % Uncomment to add the main table of contents to the table of contents
+%parskip, % Uncomment to add space between paragraphs
+%nohyperref, % Uncomment to not load the hyperref package
+headsepline, % Uncomment to get a line under the header
+%chapterinoneline, % Uncomment to place the chapter title next to the number on one line
+%consistentlayout, % Uncomment to change the layout of the declaration, abstract and acknowledgements pages to match the default layout
+]{MastersDoctoralThesis} % The class file specifying the document structure
+
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+\usepackage[T1]{fontenc} % Output font encoding for international characters
+
+% \usepackage{mathpazo} % Use the Palatino font by default
+
+% \usepackage[backend=biber,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
+% \addbibresource{blabla.bib} % The filename of the bibliography
+% \usepackage{natbib}
+% \bibliographystyle{plainnat}
+% \bibliography{blabla}
+% \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
+
+%----------------------------------------------------------------------------------------
+%	MARGIN SETTINGS
+%----------------------------------------------------------------------------------------
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	inner=2.5cm, % Inner margin
+	outer=3.8cm, % Outer margin
+	bindingoffset=.5cm, % Binding offset
+	top=1.5cm, % Top margin
+	bottom=1.5cm, % Bottom margin
+	%showframe, % Uncomment to show how the type block is set on the page
+}
+
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+\frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
+
+\pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
+
+\usepackage{epfml}
+\input{settings_custom.tex}
+
+\begin{document}
+
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{0pt} %(needs to be before titlepage and frontmatter to keep the table of contents lists short)
+    \frontmatter
+    \input{head/titlepage.tex}
+    \include{head/dedication}
+    \setcounter{page}{0}
+    \include{head/acknowledgements}
+    \include{head/abstract}
+    \include{head/notations}
+
+    \cleardoublepage
+    \pdfbookmark{\contentsname}{toc}
+    \tableofcontents
+
+    % % Following content is OPTIONAL (List of figures + tables)
+    % \cleardoublepage
+    % \phantomsection
+    % \addcontentsline{toc}{chapter}{List of Figures} % adds an entry to the table of contents
+    % \listoffigures
+    %
+    % \cleardoublepage
+    % \phantomsection
+    % \addcontentsline{toc}{chapter}{List of Tables} % adds an entry to the table of contents
+    % \listoftables
+    % your list of symbols here, if needed.
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% MAIN: The chapters of the thesis
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \mainmatter
+    \include{main/introduction}
+    \cleardoublepage
+    \include{main/fs}
+    \cleardoublepage
+    \include{main/snb}
+    \include{main/sdp}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% TAIL: Bibliography, Appendix, CV
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \include{tail/appendix}
+    \backmatter
+    % \include{tail/biblio}
+    % \printbibliography[heading=bibintoc]
+    % Add your glossary here
+    % Add your index here
+    % Photographic credits (list of pictures&images that have been used with names of the person holding the copyright for them)
+
+\end{document}
