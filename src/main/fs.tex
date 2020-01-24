@@ -67,7 +67,7 @@ Feature selection may be used in a multitude of contexts
 
 A lot of different paradigms and techniques to perform feature selection exist~\cite{intro_fs}.
 
-\subsubsection{Lasso}
+\subsubsection{Lasso}\label{subsubsec:lasso}
 
 First introduced by Tibshirani~\cite{lasso} in 1996,
 the Lasso has become increasingly popular.
@@ -193,6 +193,9 @@ Both procedures are illustrated in figure~\ref{fig:bhy}.
 Both procedures require $p$-values to be computed, which is not always feasible, especially when $p > n$.
 Both the BH and the BY procedures have stronger guarantees than desired.
 For a desired FDR level $\fdrtarget$,
+
+% \cite{statistical_inference_genome}\cite{resampled_fdr_control}\cite{unified_fdr_control}
+
 \FloatBarrier
 \section{FDR control with knockoffs}\label{sec:knockoffs}
 
@@ -316,42 +319,36 @@ It is easiest in the case where $n \geq 2p$.
 
 \subsection{Statistics computation}\label{subsec:ksc}
 
-Computing statistics $\left[ \zz; \tilde{\zz} \right] \in \R^{2p}$ from the concatenated feature matrix
-$[\mX, \tilde{\mX}]$.
-The statistics $z_j$ (resp. $\tilde{z}_j$) indicates how significant the original (resp.\ knockoff) feature $j$ is.
-These statistics must satisfy a technical condition for the method to work,
-but a wide variety of choices is possible.
-Barber-Candès suggest the following one after empirical observations.
-Let $\hat{\bbeta}(\lambda) = \underset{\bb}{\operatorname{argmin}}
-\{\frac{1}{2}\norm{\yy - \mX\bb}_2^2 + \lambda\norm{\bb}_1\}$.
-Define then $z_j = \sup\{\lambda \mid \mathbf{\hat{\beta}}_j(\lambda) \neq 0\}$.
-Intuitively, it is the first $\lambda$ such that the feature enters in the model.
-There are other ways to compute the $z_j$ statistics.
-It would for example be possible to train a regressor and take the absolute values of its coefficients.
+Given the original feature matrix and the sampled knockoffs $X,\, \tX \in \R^{n \times p}$,
+statistics $w_j$ for all $j \in \fset$ are computed.
+These statistics must satisfy the \emph{flip-sign} technical condition~\ref{def:flip_sign} for the method to work,
+but a wide variety of choices is possible as will be shown.
+\begin{definition}\label{def:flip_sign}
+        \text{(flip-sign property)}
+        A statistics function $\omega \colon \R^{n \times 2p} \times \R^n \to \R^p$
+        is said to follow the flip-sign property if for any $S \subseteq \fset$ and any $j \in \fset$,
+        \begin{equation*}
+                \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
+                        -\omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{if $j \in S$.}\\
+                        \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{otherwise.}
+                \end{cases*}
+        \end{equation*}
+\end{definition}
 
 \subsection{Statistics aggregation}\label{subsec:ksa}
 
-\begin{definition}
-\text{(flip-sign property)}
-A statistics function $\omega \colon \R^{n \times 2p} \times \R^n \to \R^p$
-is said to follow the flip-sign property if for any $S \subseteq \fset$ and any $j \in \fset$,
-\begin{equation*}
-        \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
-                -\omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{if $j \in S$.}\\
-                \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{otherwise.}
-        \end{cases*}
-\end{equation*}
-\end{definition}
-Constructing statistics satisfying the \emph{flip-sign} property is straightforward and a simple scheme leads to such
-statistics.
-First construct statistics for each original and knockoff feature
-$[ \zz ; \tilde{\zz} ] = \zeta\big( \big[ X, \tX \big],\, \yy \big)$
+Constructing statistics satisfying the \emph{flip-sign} property~\ref{def:flip_sign} is actually straightforward
+as a simple scheme leads to such statistics.
+The idea is to build statistics for each original and each knockoff feature, and then aggregate them.
+First construct statistics $[ \zz ; \tilde{\zz} ] = \zeta\big( \big[ X, \tX \big],\, \yy \big)$
 with some function $\zeta \colon \R^{n \times 2p} \times \R^n \to \R^{2p}$ satisfying
 \begin{equation}\label{eq:swap_cond}
         [ \zz ; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big)
         ,\quad
         \forall S \subseteq \fset
 \end{equation}
+The statistics $z_j$ (resp. $\tilde{z}_j$) indicates how significant the original (resp.\ knockoff) feature $j$ is.
+
 Then aggregate for each $j \in \fset$ the statistics of the original feature $z_j$ and the one of the corresponding
 knockoff $\tilde{z}_j$ with an antisymmetric function $a_j \colon \R\times\R \to \R$,
 that is, set $w_j = a_j(z_j, \tilde{z}_j)$.
@@ -367,6 +364,13 @@ Several mappings are possible, for example:
         \item $w_j = \max(z_j, \tilde{z}_j) \times \sign(z_j - \tilde{z}_j)$ (first proposed in 2015)
         \item $w_j = \log\frac{z_j}{\tilde{z}_j}$
 \end{itemize}
+Barber-Candès suggest the following one after empirical observations.
+Let $\hat{\bbeta}(\lambda) = \underset{\bb}{\operatorname{argmin}}
+\{\frac{1}{2}\norm{\yy - \mX\bb}_2^2 + \lambda\norm{\bb}_1\}$.
+Define then $z_j = \sup\{\lambda \mid \mathbf{\hat{\beta}}_j(\lambda) \neq 0\}$.
+Intuitively, it is the first $\lambda$ such that the feature enters in the model.
+There are other ways to compute the $z_j$ statistics.
+It would for example be possible to train a regressor and take the absolute values of its coefficients.
 
 \subsection{Features selection}\label{subsec:kfs}
 
@@ -426,11 +430,43 @@ two bottlenecks hurt its performances in the high dimensional setting.
 
 Knockoff features are sampled according to the distribution~\ref{eq:conditional_gaussian_knockoffs},
 and the results hold for any $\bs \in \R^p$ such that the covariance matrix is semidefinite positive.
-By computing the Schur complement, this p.s.d.\ condition is equivalent to
+
+\begin{proposition}
+        Let $\Omega = \begin{bmatrix}
+                             \Sigma & \Sigma - \diag \bs\\
+                             \Sigma - \diag \bs & \Sigma
+        \end{bmatrix}$.
+        Then $\Omega \succeq \0_{p \times p}$ if and only if $2\Sigma \succeq \diag \bs \succeq \0$.
+\end{proposition}
+
+\begin{proof}
+        Note $D = \diag\bs$.
+        By computing the Schur complement~\cite{schur_complement}
+        $\Omega_{/\Sigma} = 2D - D\Sigma^{-1}D$,
+        $\Omega \succeq \0$ is equivalent to $\Omega_{/\Sigma} \succeq \0$.
+        Define $M$ and its Schur complements as follows
+        \begin{equation*}
+                M = \begin{bmatrix}
+                        2D & D\\
+                        D & \Sigma
+                \end{bmatrix}
+                ,\qquad\qquad
+                \begin{cases*}
+                        M_{/2D} = \Sigma - \frac{1}{2}D\\
+                        M_{/\Sigma} = 2D - D\Sigma^{-1}D
+                \end{cases*}
+        \end{equation*}
+        Finally, $\Omega_{/\Sigma} = M_{/\Sigma}$ is p.s.d.\ if and only if both $\Sigma - \frac{1}{2}D$ and $D$ are p.s.d.
+\end{proof}
 
 \subsubsection{Statistics computation}\label{subsubsec:bot_stats}
 
 and could take advantage of sparse naive Bayes to run faster.
+\bigbreak
+These two bottlenecks make the .
+The following chapters tackle these two issues by proposing fast statistics computation.
+From now, only binary classification problems will be considered, where the label $y$ takes values
+in $\left\{ \cC^+,\, \cC^- \right\}$.
 
 \subsection{Python implementation}\label{subsec:python_implementation}
 
@@ -438,4 +474,5 @@ Barber-Candès (along with other coauthor) provided a R implementation
 of the knockoff framework\footnote{
         The package page can be found at this address \url{https://cran.r-project.org/web/packages/knockoff/index.html}.
 }.
-To the best of our knowledge, no unified Python implementation 
+To the best of our knowledge, no unified Python implementation
+Scikit-Learn~\cite{sklearn}
