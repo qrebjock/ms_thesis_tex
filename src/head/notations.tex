@@ -4,19 +4,19 @@
 \addcontentsline{toc}{chapter}{Notations}
 
 $\N$ denotes the set of natural integers and $\R$ the set of real numbers.
-
+%
 Vectors are written in bold letters, e.g. $\xx, \yy \in \R^p$.
-
+%
 Matrices are in capital bold letters, e.g. $\mX \in \R^{n \times p}$.
-
+%
 We may cast any vector $\xx \in \R^p$ to a column matrix $x \in \R^{p \times 1}$ with the same entry values.
-
+%
 We note $\odot$ the Hadamard (element-wise) product between two vectors or matrices.
-
+%
 $\0$ and $\1$ are the vectors whose all entries are $0$ and $1$ respectively, and whose size is inferred by the context.
-
+%
 For a vector $\vv$, we note $\norm{\vv}_0$ the number of non-zero entries of $\vv$ (that is, its cardinality).
-
+%
 The $\diag$ operator can be used in two contexts;
 either to transform a vector into a diagonal matrix whose diagonal entries match the vector,
 or to extract the diagonal of a matrix.
@@ -42,8 +42,10 @@ For example
          4
     \end{bmatrix}
 \end{equation*}
-
+%
 Given two matrices $A$ and $B$, we note $\big[ A, B \big]$ and $\big[ A; B \big]$ their horizontal and
 vertical concatenation respectively (if dimensions match).
-
+%
 Functions $\R \to \R$ applied to matrices are implicitly performed element-wise, unless otherwise specified.
+%
+$\E \cX$ denotes the expectation of a random variable (or vector) $\cX$.

@@ -1,0 +1,15 @@
+\chapter{Fast statistics computation}\label{ch:fsc}
+
+The computation of statistics is a key step in the knockoff selection process described in section~\ref{sec:knockoffs}.
+Most statistics control the FDR,
+provided that the
+
+However, the power can drastically change depending on how good the statistics are.
+In this chapter, we note $X \in \R^{n \times p}$ and $\tX \in \R^{n \times p}$ the original and the knockoff
+feature matrices respectively.
+We also suppose that the knockoffs were generated respecting the conditions\dots.
+Experimentally, it appears that for most tasks the coefficients of a cross-validated Lasso
+
+\subsection{Multi-stage procedures}\label{subsec:multi_stage}
+
+Multi-stage procedure~\cite{multi_stage_fdr}

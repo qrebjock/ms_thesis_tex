@@ -23,7 +23,7 @@ headsepline, % Uncomment to get a line under the header
 % \usepackage{mathpazo} % Use the Palatino font by default
 
 % \usepackage[backend=biber,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
-% \addbibresource{blabla.bib} % The filename of the bibliography
+% \addbibresource{bibliography.bib} % The filename of the bibliography
 % \usepackage{natbib}
 % \bibliographystyle{plainnat}
 % \bibliography{blabla}
@@ -91,6 +91,7 @@ headsepline, % Uncomment to get a line under the header
     \include{main/fs}
     \cleardoublepage
     \include{main/snb}
+    \include{main/fsc}
     \include{main/sdp}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,6 +99,8 @@ headsepline, % Uncomment to get a line under the header
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \include{tail/appendix}
     \backmatter
+    \bibliographystyle{plain}
+    \bibliography{bibliography}
     % \include{tail/biblio}
     % \printbibliography[heading=bibintoc]
     % Add your glossary here
