@@ -160,6 +160,13 @@
 	adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
+@article{lars_complexity,
+	author = {Mairal, Julien and Yu, B.},
+	year = {2012},
+	month = {04},
+	title = {Complexity Analysis of the Lasso Regularization Path},
+	volume = {1}
+}
 
 @inproceedings{odd_ratios,
   title={Feature Selection for Unbalanced Class Distribution and Naive Bayes},
@@ -177,6 +184,42 @@
 	journal = {SIAM Journal on Optimization},
 	doi = {10.1137/0806020}
 }
+
+@article{sdp_scs,
+	author = {O’donoghue, Brendan and Chu, Eric and Parikh, Neal and Boyd, Stephen},
+	title = {Conic Optimization via Operator Splitting and Homogeneous Self-Dual Embedding},
+	year = {2016},
+	issue_date = {June 2016},
+	publisher = {Plenum Press},
+	address = {USA},
+	volume = {169},
+	number = {3},
+	issn = {0022-3239},
+	url = {https://doi.org/10.1007/s10957-016-0892-3},
+	doi = {10.1007/s10957-016-0892-3},
+	journal = {J. Optim. Theory Appl.},
+	month = jun,
+	pages = {1042–1068},
+	numpages = {27},
+	keywords = {Optimization, 49M05, 49M29, Cone programming, 90C06, 90C25, First-order methods, Operator splitting}
+}
+
+@article{sdp_admm,
+	author="Wen, Zaiwen and Goldfarb, Donald and Yin, Wotao",
+	title="Alternating direction augmented Lagrangian methods for semidefinite programming",
+	journal="Mathematical Programming Computation",
+	year="2010",
+	month="Dec",
+	day="01",
+	volume="2",
+	number="3",
+	pages="203--230",
+	abstract="We present an alternating direction dual augmented Lagrangian method for solving semidefinite programming (SDP) problems in standard form. At each iteration, our basic algorithm minimizes the augmented Lagrangian function for the dual SDP problem sequentially, first with respect to the dual variables corresponding to the linear constraints, and then with respect to the dual slack variables, while in each minimization keeping the other variables fixed, and then finally it updates the Lagrange multipliers (i.e., primal variables). Convergence is proved by using a fixed-point argument. For SDPs with inequality constraints and positivity constraints, our algorithm is extended to separately minimize the dual augmented Lagrangian function over four sets of variables. Numerical results for frequency assignment, maximum stable set and binary integer quadratic programming problems demonstrate that our algorithms are robust and very efficient due to their ability or exploit special structures, such as sparsity and constraint orthogonality in these problems.",
+	issn="1867-2957",
+	doi="10.1007/s12532-010-0017-1",
+	url="https://doi.org/10.1007/s12532-010-0017-1"
+}
+
 
 @book{convex_optimization,
 	author = {Boyd, Stephen and Vandenberghe, Lieven},
@@ -419,4 +462,20 @@ journal = {Journal of Machine Learning Research}
 	author = "Olivier Ledoit and Michael Wolf",
 	keywords = "Condition number, Covariance matrix estimation, Empirical Bayes, General asymptotics, Shrinkage",
 	abstract = "Many applied problems require a covariance matrix estimator that is not only invertible, but also well-conditioned (that is, inverting it does not amplify estimation error). For large-dimensional covariance matrices, the usual estimator—the sample covariance matrix—is typically not well-conditioned and may not even be invertible. This paper introduces an estimator that is both well-conditioned and more accurate than the sample covariance matrix asymptotically. This estimator is distribution-free and has a simple explicit formula that is easy to compute and interpret. It is the asymptotically optimal convex linear combination of the sample covariance matrix with the identity matrix. Optimality is meant with respect to a quadratic loss function, asymptotically as the number of observations and the number of variables go to infinity together. Extensive Monte Carlo confirm that the asymptotic results tend to hold well in finite sample."
+}
+
+@Article{random_forests,
+	author="Breiman, Leo",
+	title="Random Forests",
+	journal="Machine Learning",
+	year="2001",
+	month="Oct",
+	day="01",
+	volume="45",
+	number="1",
+	pages="5--32",
+	abstract="Random forests are a combination of tree predictors such that each tree depends on the values of a random vector sampled independently and with the same distribution for all trees in the forest. The generalization error for forests converges a.s. to a limit as the number of trees in the forest becomes large. The generalization error of a forest of tree classifiers depends on the strength of the individual trees in the forest and the correlation between them. Using a random selection of features to split each node yields error rates that compare favorably to Adaboost (Y. Freund {\&} R. Schapire, Machine Learning: Proceedings of the Thirteenth International conference, ***, 148--156), but are more robust with respect to noise. Internal estimates monitor error, strength, and correlation and these are used to show the response to increasing the number of features used in the splitting. Internal estimates are also used to measure variable importance. These ideas are also applicable to regression.",
+	issn="1573-0565",
+	doi="10.1023/A:1010933404324",
+	url="https://doi.org/10.1023/A:1010933404324"
 }

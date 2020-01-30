@@ -11,7 +11,7 @@ a recent approach to control the false discovery rate when performing feature se
 
 Feature selection is an active area of research in statistics and machine learning.
 It primarily consists in identifying the most relevant features (or covariates) explaining an observed variable.
-It is closely related to Occam's razor.
+It is closely related to Occam's razor which states that the simplest explanation is often the best one.
 More formally, let $\cX$ be a $p$-dimensional random vector representing observed features
 and $\cY$ a random target that may depend on $\cX$.
 For example, $\cX$ could be the level of expression of the genes of an individual,
@@ -107,9 +107,10 @@ This property makes the Lasso particularly suited for feature selection;
 just keep the features whose weight is non-zero.
 However, the choice of $\lambda$ seems to be arbitrary,
 especially as it's not possible to know beforehand how many features will be selected.
+
 The behavior of the path $\lambda \mapsto \hat{\bbeta}(\lambda)$ has been extensively studied,
-and the algorithm LARS~\cite{lars} was developed to efficiently compute it
-(which is possible because it is piecewise linear).
+and the algorithm LARS~\cite{lars} was developed to efficiently compute it,
+which is possible because it is piecewise linear.
 It allows to compute $\hat{\bbeta}$ for all relevant value of $\lambda$ at a marginal cost.
 In practice, the $\lambda$ giving the highest score on a \emph{train} dataset is picked.
 The $\ell_1$ regularization can easily be extended to many other estimators than the least squares,
@@ -355,8 +356,8 @@ In the particular case where $\cX$ is multivariate gaussian, the exact distribut
         \big[ \cX; \tcX \big] \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix}, \Omega\bigg)
         ,\quad\text{where }\quad
         \Omega = \begin{bmatrix}
-             \Sigma & \Sigma - \diag \bs\\
-             \Sigma - \diag \bs & \Sigma
+            \Sigma & \Sigma - \diag \bs\\
+            \Sigma - \diag \bs & \Sigma
         \end{bmatrix}
         \quad\text{for some }
         \bs \in \R^p,
@@ -424,7 +425,9 @@ Unlabeled samples are thus valuable.
 
 Given the original feature matrix and the sampled knockoffs $X,\, \tX \in \R^{n \times p}$,
 statistics $w_j$ for all $j \in \fset$ are computed.
-These statistics must satisfy the \emph{flip-sign} technical condition~\ref{def:flip_sign} for the method to work,
+Each $w_j$ represents how more significant the original feature $X_j$ is compared to $\tX_j$.
+These statistics must satisfy the \emph{flip-sign} technical condition~\ref{def:flip_sign}
+for the FDR control to carry out,
 but a wide variety of choices is possible as will be shown.
 \begin{definition}\label{def:flip_sign}
 \text{(flip-sign property)}
@@ -432,112 +435,146 @@ A statistics function $\omega \colon \R^{n \times 2p} \times \R^n \to \R^p$
 is said to follow the flip-sign property if for any $S \subseteq \fset$ and any $j \in \fset$,
 \begin{equation*}
     \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
-        -\omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{if $j \in S$.}\\
-        \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) &\quad\text{otherwise.}
+        -\omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{if $j \in S$.}\\
+        \omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{otherwise.}
     \end{cases*}
 \end{equation*}
 \end{definition}
+This property is very natural,
+as it is simply asking the original and the knockoff features to play antisymmetric roles.
 
 \subsubsection{Statistics aggregation}\label{subsubsec:ksa}
 
 Constructing statistics satisfying the \emph{flip-sign} property~\ref{def:flip_sign} is actually straightforward
-as a simple scheme leads to such statistics.
+as an elementary scheme in two steps leads to such statistics.
 The idea is to build statistics for each original and each knockoff feature, and then aggregate them.
-First construct statistics $[ \zz ; \tilde{\zz} ] = \zeta\big( \big[ X, \tX \big],\, \yy \big)$
-with some function $\zeta \colon \R^{n \times 2p} \times \R^n \to \R^{2p}$ satisfying
-\begin{equation}\label{eq:swap_cond}
-    [ \zz ; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big)
-    ,\quad
-    \forall S \subseteq \fset
-\end{equation}
-The statistics $z_j$ (resp. $\tilde{z}_j$) indicates how significant the original (resp.\ knockoff) feature $j$ is.
+\begin{enumerate}
+    \item First construct statistics $[ \zz ; \tilde{\zz} ] = \zeta\big( \big[ X, \tX \big],\, \yy \big)$
+        with some function $\zeta \colon \R^{n \times 2p} \times \R^n \to \R^{2p}$ satisfying
+        \begin{equation}\label{eq:swap_cond}
+        [ \zz ; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big)
+        ,\quad
+        \forall S \subseteq \fset
+        \end{equation}
+        The statistics $z_j$ (resp. $\tilde{z}_j$) indicates how significant the original (resp.\ knockoff) feature $j$ is.
+    \item Then aggregate for each $j \in \fset$ the statistics of the original feature $z_j$ and the one of the corresponding
+        knockoff $\tilde{z}_j$ with an antisymmetric function $a_j \colon \R\times\R \to \R$.
+        That is, set $w_j = a_j(z_j, \tilde{z}_j)$.
+\end{enumerate}
+It is easy to show that such constructed statistics will satisfy the \emph{flip-sign} property~\ref{def:flip_sign}.
 
-Then aggregate for each $j \in \fset$ the statistics of the original feature $z_j$ and the one of the corresponding
-knockoff $\tilde{z}_j$ with an antisymmetric function $a_j \colon \R\times\R \to \R$,
-that is, set $w_j = a_j(z_j, \tilde{z}_j)$.
-Basically any antisymmetric function could work, but some choices lead to better statistics.
-As for the function $\zeta$, it only needs to satisfy the \emph{swap} property~\ref{eq:swap_cond}.
-This condition may seem restrictive but a large number of choices are actually valid.
-
-Computing antisymmetric statistics $\ww \in \R^p$ where $\forall j = 1, \dots, p$, $w_j$
-indicates how more important an original feature $j$ is compared to its associated knockoff.
-Several mappings are possible, for example:
+Basically any antisymmetric function $a_j$ could work, but some choices experimentally lead to a better power.
+Here are a few examples of mappings:
 \begin{itemize}
-    \item $w_j = z_j - \tilde{z}_j$ (experimentally gives highest power)
+    \item $w_j = z_j - \tilde{z}_j$ (experimentally gives highest power in many cases)
     \item $w_j = \max(z_j, \tilde{z}_j) \times \sign(z_j - \tilde{z}_j)$ (first proposed in 2015)
     \item $w_j = \log\frac{z_j}{\tilde{z}_j}$
 \end{itemize}
+As for the function $\zeta$, it only needs to satisfy the \emph{swap} property~\ref{eq:swap_cond}.
+This condition may seem restrictive but a large number of choices are actually valid.
 
 \subsubsection{Examples}\label{subsubsec:sce}
 
 A few examples of statistics relying on the aggregation trick are presented in this subsection.
+
 In~\cite{fixed_x_knockoffs}, Barber-Candès suggest after empirical observations the use of the
 Lasso Signed Max (LSM) statistics defined as follows.
-Let $\hat{\bbeta}(\lambda)$ be the coefficients of a Lasso model with penalty coefficient $\lambda > 0$.
-As mentioned in subsection~\ref{subsubsec:lasso},
-all the coefficients are null starting from $\lambda = \inf$,
-and will potentially change as $\lambda \to 0$.
-Then define $z_j$ to be the highest value of $\lambda$ such that .
-Intuitively, it is the first $\lambda$ such that the feature enters in the model.
 \begin{equation}
     z_j = \sup\{\lambda \mid \hat{\bbeta}_j(\lambda) \neq 0\}
     ,\qquad\qquad
     \hat{\bbeta}(\lambda) =
-        \underset{\bb}{\argmin}\;
-        \frac{1}{2}\norm{\yy - X\bb}_2^2 + \lambda\norm{\bb}_1
+    \underset{\bb}{\argmin}\;
+    \frac{1}{2}\big\lVert \yy - \big[ X, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
 \end{equation}
-There are other ways to compute the $z_j$ statistics.
-It would for example be possible to train a regressor and take the absolute values of its coefficients.
+The vector $\hat{\bbeta}(\lambda) \in \R^{2p}$ contains the coefficients of a Lasso model
+with penalty coefficient $\lambda > 0$.
+As mentioned in subsection~\ref{subsubsec:lasso},
+all the coefficients are null starting from $\lambda = +\infty$,
+and are likely to shift (and to grow in absolute value) as $\lambda \to 0$.
+It makes sense to use the first point where the coefficient $\beta_j$ is not null
+as a significance metric for each individual feature $j$.
+In addition, the LARS algorithms is able to compute that value pretty efficiently~\cite{lars_complexity}.
 
-\subsection{Features selection}\label{subsec:kfs}
+Training a plain Lasso estimator.
+Once again, the LARS algorithm allows to cross-validate the Lasso efficiently.
+Experimentally, the Lasso gives remarkable results in terms of power.
+
+More generally, the coefficients in absolute value of any reasonable regressor
+(or classifier, depending on the task) constitute a judicious option of statistics.
+The fact that the \emph{flip-sign} property isn't restrictive makes the knockoff framework very powerful.
+Depending on the data, an adapted model can be trained be it logistic regression,
+SVMs, or random forests~\cite{random_forests}.
+When the model has hyper-parameters, those are typically tuned using cross-validation.
+This step is usually costly.
+
+\subsection{Selection thresholds}\label{subsec:kfs}
 
 The selection itself requires the computation of a data-dependent threshold $\tau$
-conditioned by the target FDR $\fdrtarget$, as defined in~\ref{eq:knock_thres} and~\ref{eq:knockp_thres}.
-Finally, features $j$ whose statistics $w_j$ are above the threshold are selected;
-$\hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}$.
-Depending on how selective we want the procedure to be, the threshold $\tau$ can be adapted,
-and leads to different guarantees regarding the control of the FDR\@.
-Let's first define a modified version of the FDR\@.
+conditioned by the target FDR $\fdrtarget \in \zoint$.%, as defined in~\ref{eq:knock_thres} and~\ref{eq:knockp_thres}.
+Finally, only the features $j$ whose statistics $w_j$ is above the threshold are selected.
+\begin{equation}
+    \hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}
+\end{equation}
+Depending on how restrictive the procedure ought to be, the threshold $\tau$ can be adapted.
+It leads to different guarantees regarding the control of the FDR\@.
+Barber-Candès establish two selection procedures,
+namely \emph{knockoff} and \emph{knockoff+}.
+They control the modified FDR (as defined below) and the FDR respectively.
 \begin{definition}\label{def:mfdr}
 Given an estimate $\hat{\cS}$ of $\cS$ and a desired target false discovery rate $q \in [0, 1]$,
 we define the modified $\fdr$ as follows:
 \begin{equation*}
     \mfdr = \E{
-    \frac
-    {\abs{\left\{ j \mid j \in \hat{\cS} \setminus \cS \right\}}}
-    {\lvert\hat{\cS}\rvert + 1 / q}
+        \frac
+            {\abs{\left\{ j \mid j \in \hat{\cS} \setminus \cS \right\}}}
+            {\lvert\hat{\cS}\rvert + 1 / q}
     }
 \end{equation*}
 \end{definition}
-As $q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
-But if the target threshold $q$ is not too low, and if many features are selected by the procedure,
-the modified version of the FDR is close enough to the true value.
-Controlling it is then relevant.
+As $0 \leq q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
+It means that controlling the $\mfdr$ is less restrictive than controlling the $\fdr$,
+as the $\fdr$ could potentially be arbitrarily larger than the $\mfdr$.
+But if the target threshold $q$ is not too small, and if many features are selected by the procedure,
+the modified version of the FDR is close enough to the actual $\fdr$.
+As will be shown later, being less restrictive by controlling only the $\mfdr$ can greatly improve the power
+of the selection.
+
+The only difference between the \emph{knockoff} and the \emph{knockoff+} procedures is the selection threshold $\tau$.
 \begin{definition}
     (knockoff and knockoff+ thresholds)
+    Given the statistics $\ww \in \R^p$ computed from $X$ and $\tX$,
+    we define the knockoff and knockoff+ threshold respectively as follows:
     \begin{align}
         \tau &=
         \min\left\{
-        t > 0 \mid \frac{\abs{j \mid w_j \leq -t}}{\abs{j \mid w_j \geq t}} \leq q
+            t > 0 \mid \frac
+                { \abs{\left\{ j \mid w_j \leq -t \right\}} }
+                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+            \leq q
         \right\}\label{eq:knock_thres}\\
         \tau^+ &=
         \min\left\{
-        t > 0 \mid \frac{1 + \abs{j \mid w_j \leq -t}}{\abs{j \mid w_j \geq t}} \leq q
+            t > 0 \mid \frac
+                { 1 + \abs{\left\{ j \mid w_j \leq -t \right\}} }
+                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+            \leq q
         \right\}\label{eq:knockp_thres}
     \end{align}
 \end{definition}
-
-\begin{theorem}
+They only differ by their numerator, where $\tau^+$ has an additional $+1$.
+The main result of Barber-Candès regarding the control of the $\mfdr$ and $\fdr$ is stated in~\ref{th:knockoffs}.
+\begin{theorem}\label{th:knockoffs}
+    (guarantees of the knockoff procedures)
     Construct $\hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}$
     and $\hat{\cS}^+ = \left\{ j \mid w_j \geq \tau^+ \right\}$.
-    Then,
+    These selections ensure the following FDR controls:
     \begin{equation}
-        \mfdr\left[ \hat{\cS} \right] \leq q
+        \mfdr\big[ \hat{\cS} \big] \leq q
         ,\qquad
-        \fdr\left[ \hat{\cS}^+ \right] \leq q
+        \fdr\big[ \hat{\cS}^+ \big] \leq q
     \end{equation}
 \end{theorem}
-%
+
 \subsection{Bottlenecks}\label{subsec:kb}
 
 Despite the nice theoretical guarantees on the $\fdr$ control that the knockoff procedure proposes,
@@ -545,17 +582,16 @@ two bottlenecks hurt its performances in the high dimensional setting.
 
 \subsubsection{SDP}\label{subsubsec:bot_sdp}
 
-Knockoff features are sampled according to the distribution~\ref{eq:conditional_gaussian_knockoffs},
-and the results hold for any $\bs \in \R^p$ such that the covariance matrix is semidefinite positive.
-
-\begin{proposition}
+In the gaussian setting,
+knockoff features are sampled according to the distribution~\ref{eq:conditional_gaussian_knockoffs}.
+The control guarantees hold for any $\bs \in \R^p$ such that the covariance matrix $\Omega$ is semidefinite positive.
+\begin{proposition}\label{prop:omega_psd}
     Let $\Omega = \begin{bmatrix}
-                      \Sigma & \Sigma - \diag \bs\\
-                      \Sigma - \diag \bs & \Sigma
+        \Sigma & \Sigma - \diag \bs\\
+        \Sigma - \diag \bs & \Sigma
     \end{bmatrix}$.
     Then $\Omega \succeq \0_{p \times p}$ if and only if $2\Sigma \succeq \diag \bs \succeq \0$.
 \end{proposition}
-
 \begin{proof}
     Note $D = \diag\bs$.
     By computing the Schur complement~\cite{schur_complement}

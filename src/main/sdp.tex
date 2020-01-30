@@ -1,61 +1,106 @@
 \chapter{SDP}\label{ch:sdp}
 
 In the case of gaussian knockoffs,
-or more generally when we only impose $\left(\mX, \tilde{\mX}\right)_{\swap\left( S \right)}$ to have the same distribution
-as $\left(\mX, \tilde{\mX}\right)$ for any subset $S \subseteq \left\{ 1, \dots, p \right\}$
+or more generally when we only impose
+$\big[ X, \tX \big]_{\swap\left( S \right)}$
+to have the same first two moments as
+$\big[ X, \tX \big]$
+for any subset
+$S \subseteq \left\{ 1, \dots, p \right\}$,
+rather than the same distribution~\ref{itm:cond_swap},
+$\tX$ can be sampled from a normal distribution $\cN\left( \bupsilon,\, \Upsilon \right)$ whose parameters
+$\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs}.
+These formulas are valid for any vector $\bs \in \R^p$ such that $\Omega$
+is indeed a covariance matrix (semidefinite positive).
+\begin{equation*}
+    \Omega = \begin{bmatrix}
+        \Sigma & \Sigma - \diag \bs\\
+        \Sigma - \diag \bs & \Sigma
+    \end{bmatrix}
+    \succeq \0_{p \times p}
+\end{equation*}
+As shown in proposition~\ref{prop:omega_psd},
+this matrix is semidefinite positive if and only if $\0_{p \times p} \diag \bs \preceq 2 \Sigma$.
+The first inequality clearly holds if all the entries of $\bs$ are positive.
+The second one is trickier.
 
-\[
-\left(\begin{array}{@{}cc@{}}
-  \mathbf{\Sigma}
-  & \mathbf{\Sigma} - \diag \bs\\
-  \mathbf{\Sigma} - \diag \bs
-  & \mathbf{\Sigma}
-\end{array}\right)
-\]
-
-This matrix is positive semi definite if and only if $\diag \bs \preceq 2 \mSigma$.
+In this chapter, we show why the choice of $\bs$ is important and how to efficiently find a good one
+in the high dimensional setting.
+In the remaining, we suppose that we know $\Sigma$, even though in practice the covariance would be
+estimated $\hat{\Sigma}$.
 
 \section{Equi-correlated knockoffs}\label{sec:equi}
 
-A fast and easy way to find a suitable $\bs$ is to pick $s_j = \min(2\lambda_{\text{min}}(\mSigma), 1) \,\forall j$.
+\subsubsection{A cheap solution}
+
+For any psd matrix $A \in \R^p$, $A + \alpha\mI_p$ has the same eigenvalues as $A$, but shifted by $\alpha$.
+It gives a fast and simple way to find a suitable $\bs$.
+\begin{equation*}
+    s_j = \min(2\lambda_{\min}(\covm), 1)
+    \quad\text{ for all } 0 \leq j \leq p
+\end{equation*}
+The problem of finding the smallest eigenvalue $\lambda_{\min}(\covm)$ can be solved efficiently.
+Example.
+
+\subsubsection{Why it is not desirable}
+
+For large values of $p$,
+the minimum eigenvalue of $\covm$ is very likely to be small,
+unless $\covm$ has a substantially special structure.
+Let us analyze briefly the covariance of $\big[ \cX; \tcX \big]$ to understand why it is not desirable.
+\begin{equation*}
+    \begin{cases}
+        \cov(\cX_j,\, \tcX_{j'}) = \cov(\cX_j,\, \cX_{j'}) \text{ for all } j \neq j'\\
+        \cov(\cX_j,\, \tcX_j) = \cov(\cX_j,\, \cX_j) - s_j \text{ for all } j
+    \end{cases}
+\end{equation*}
+First, $\tcX$ has the same internal covariance has $\cX$,
+and two distinct original and knockoff features have the same covariance as the one of the two original ones.
+It makes the knockoff feature sufficiently close to the original features to fool them.
+However, an original feature $j$ and its corresponding knockoff that is smaller the larger $s_j$ is.
+If $s_j$ was $0$, $\cX_j$ couldn't be distinguished from $\tcX_j$ and the selection would suffer from a low power.
 
 \section{SDP knockoffs}\label{sec:sdp}
 
+This observation motivates us to maximize the entries of $\bs$,
+while maintaining the inequality $\diag\bs \preceq \tcovm$.
+This can be formulated in the optimization problem~\ref{eq:sdp}.
+\begin{equation}\label{eq:sdp}
+    \underset{\bs \in \R^p}{\argmax}\;\,
+    \sum_{j = 1}^p s_j
+    \qquad
+    \text{subject to } \begin{cases}
+        s_j \geq 0\text{ for all } j\\
+        \diag \bs \preceq \tcovm
+    \end{cases}
+\end{equation}
+This problem is a structured semidefinite program (SDP) and can efficiently be solved for small values of
+$p$ by interior point methods~\cite{interior_point_method_sdp} for example.
+For larger values of $p$, even first order methods like
+SCS~\cite{sdp_scs} or alternating direction~\cite{sdp_admm}
+quickly become intractable.
+Even though the convergence speed depends a lot on $\covm$,
+it experimentally appears that other methods have to be considered when $p > 1000$.
 
-It motivates us to solve the following optimization problem in order to
-
-\begin{equation*}\label{eq:sdp}
-\begin{aligned}
-    & \underset{\bs}{\text{maximize}}
-    & & \sum_{j = 1}^p s_j\\
-    & \text{subject to}
-    & & 0 \leq s_j \leq 1 \forall j\\
-    & & \diag \bs \preceq 2 \mSigma
-\end{aligned}
-\end{equation*}
-
-This problem is a structured semidefinite program (SDP) and can efficiently be solved for small values of p by interior point method for
-example (\cite{interior_point_method_sdp}).
-For larger values of $p$, it quickly becomes intractable and other methods must be considered.
-Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below to reduce the computation time.
-
+In order to reduce the computation time,
+Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below.
 \paragraph*{Step 1.}
-Pick an approximation $\mathbf{\Sigma_\text{approx}}$ of $\mSigma$ and solve
+Pick an approximation $\Sigma_\text{approx}$ of $\Sigma$ and solve
 \[
     \text{minimize} \sum_{j = 1}^p (1 - \hat{s}_j)
     \quad\text{subject to}\quad
-    0 \leq \hat{s}_j \leq 1, \diag{\hat{s}} \preceq 2\mathbf{\Sigma_\text{approx}}
+    0 \leq \hat{s}_j \leq 1, \diag{\hat{s}} \preceq \tcovm_\text{approx}
 \]
 \paragraph*{Step 2.}
 Solve
 \[
     \text{maximize}\;\gamma
     \quad\text{subject to}\quad
-    \diag\left\{\gamma\hat{s}\right\} \preceq 2\mathbf{\Sigma}
+    \diag\left\{\gamma\hat{s}\right\} \preceq 2\Sigma
 \]
 Finally, pick $s = \gamma \hat{s}$.
 
-Note that $\mathbf{\Sigma_\text{approx}} = \mathbf{I}$ and $\mathbf{\Sigma_\text{approx}} = \mathbf{\Sigma}$ yield
+Note that $\Sigma_\text{approx} = \mI$ and $\Sigma_\text{approx} = \Sigma$ yield
 the last two solutions.
 The step 2 can be solved very efficiently using bisection as it is a one-dimensional SDP\@.
-Finding the right  $\mathbf{\Sigma_\text{approx}}$ is a compromise between computation time and power.
+Finding the right  $\Sigma_\text{approx}$ is a compromise between computation time and power.
