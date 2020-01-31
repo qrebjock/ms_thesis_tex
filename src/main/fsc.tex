@@ -1,15 +1,30 @@
 \chapter{Fast statistics computation}\label{ch:fsc}
 
 The computation of statistics is a key step in the knockoff selection process described in section~\ref{sec:knockoffs}.
-Most statistics control the FDR,
-provided that the
+As it has been discussed, a large variety of statistics control the FDR,
+provided that the \textit{flip-sign} property~\ref{def:flip_sign} is satisfied.
 
 However, the power can drastically change depending on how good the statistics are.
-In this chapter, we note $X \in \R^{n \times p}$ and $\tX \in \R^{n \times p}$ the original and the knockoff
-feature matrices respectively.
 We also suppose that the knockoffs were generated respecting the conditions\dots.
 Experimentally, it appears that for most tasks the coefficients of a cross-validated Lasso
 
-\subsection{Multi-stage procedures}\label{subsec:multi_stage}
+In this chapter, we note $X \in \R^{n \times p}$ the original design matrix,
+and we suppose that the distribution $\tcX \mid \cX$ could be computed.
+Let $\tX \in \R^{n \times p}$ be sampled from that knockoff distribution.
+
+\section{Lasso is good but slow}\label{sec:}
+
+Experimentally, cross-validating a regressor (or classifier) against the data $\big[ X, \tX \big]$,
+keeping its coefficients in absolute value,
+and aggregating them as described in~\ref{subsubsec:ksa} yields excellent results.
+Most classical regression models scale pleasantly as $p$ increases;
+$\cO(n \cdot p)$ for Lasso and logistic regression,
+$\cO(n \cdot p^2)$ for SVMs.
+But when the number of features is several thousands or more,
+
+
+\section{Fast statistics}\label{sec:a}
+
+\section{Multi-stage procedures}\label{sec:multi_stage}
 
 Multi-stage procedure~\cite{multi_stage_fdr}

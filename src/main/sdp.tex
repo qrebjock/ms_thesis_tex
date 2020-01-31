@@ -17,10 +17,10 @@ is indeed a covariance matrix (semidefinite positive).
         \Sigma & \Sigma - \diag \bs\\
         \Sigma - \diag \bs & \Sigma
     \end{bmatrix}
-    \succeq \0_{p \times p}
+    \succeq \0_{2p \times 2p}
 \end{equation*}
 As shown in proposition~\ref{prop:omega_psd},
-this matrix is semidefinite positive if and only if $\0_{p \times p} \diag \bs \preceq 2 \Sigma$.
+this matrix is semidefinite positive if and only if $\0_{p \times p} \preceq \diag \bs \preceq 2 \Sigma$.
 The first inequality clearly holds if all the entries of $\bs$ are positive.
 The second one is trickier.
 
@@ -33,12 +33,12 @@ estimated $\hat{\Sigma}$.
 
 \subsubsection{A cheap solution}
 
-For any psd matrix $A \in \R^p$, $A + \alpha\mI_p$ has the same eigenvalues as $A$, but shifted by $\alpha$.
+For any psd matrix $A \in \R^p$, $A + \alpha \cdot \mI$ has the same eigenvalues as $A$, but shifted by $\alpha$.
 It gives a fast and simple way to find a suitable $\bs$.
-\begin{equation*}
+\begin{equation}\label{eq:equi}
     s_j = \min(2\lambda_{\min}(\covm), 1)
     \quad\text{ for all } 0 \leq j \leq p
-\end{equation*}
+\end{equation}
 The problem of finding the smallest eigenvalue $\lambda_{\min}(\covm)$ can be solved efficiently.
 Example.
 
@@ -80,27 +80,41 @@ For larger values of $p$, even first order methods like
 SCS~\cite{sdp_scs} or alternating direction~\cite{sdp_admm}
 quickly become intractable.
 Even though the convergence speed depends a lot on $\covm$,
-it experimentally appears that other methods have to be considered when $p > 1000$.
+it experimentally appears that alternative methods have to be considered when $p > 1000$.
 
 In order to reduce the computation time,
 Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below.
 \paragraph*{Step 1.}
 Pick an approximation $\Sigma_\text{approx}$ of $\Sigma$ and solve
-\[
-    \text{minimize} \sum_{j = 1}^p (1 - \hat{s}_j)
-    \quad\text{subject to}\quad
-    0 \leq \hat{s}_j \leq 1, \diag{\hat{s}} \preceq \tcovm_\text{approx}
-\]
+\begin{equation}\label{eq:sdp_approx}
+    \underset{\hat{\bs} \in \R^p}{\argmax}\;\,
+    \sum_{j = 1}^p \hat{s}_j
+    \qquad
+    \text{subject to } \begin{cases}
+        \hat{s}_j \geq 0\text{ for all } j\\
+        \diag \hat{\bs} \preceq \tcovmapprox
+    \end{cases}
+\end{equation}
 \paragraph*{Step 2.}
-Solve
-\[
-    \text{maximize}\;\gamma
+Solve the one dimensional maximization
+\begin{equation}\label{eq:sdp_approx_1d}
+    \underset{\gamma \in \R}{\argmax}\;\,\gamma
     \quad\text{subject to}\quad
-    \diag\left\{\gamma\hat{s}\right\} \preceq 2\Sigma
-\]
-Finally, pick $s = \gamma \hat{s}$.
+    \diag\left( \gamma \cdot \hat{\bs} \right) \preceq 2\Sigma
+\end{equation}
+Finally, pick $\bs = \gamma \cdot \hat{\bs}$.
 
-Note that $\Sigma_\text{approx} = \mI$ and $\Sigma_\text{approx} = \Sigma$ yield
-the last two solutions.
-The step 2 can be solved very efficiently using bisection as it is a one-dimensional SDP\@.
-Finding the right  $\Sigma_\text{approx}$ is a compromise between computation time and power.
+\begin{remark}
+    Note that the two extreme options $\covmapprox = \mI$ and $\covmapprox = \Sigma$ yield
+    the same solutions as solving equi-knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
+\end{remark}
+
+Solving~\ref{eq:sdp_approx_1d} in step 2 can be done very efficiently using bisection as it is a one-dimensional SDP\@.
+The optimization problem~\ref{eq:sdp_approx} is however the same as the one in~\ref{eq:sdp},
+except for the approximation $\covmapprox$.
+To speed up the computations,
+$\covmapprox$ can be chosen to be a block-diagonal matrix of $k$ blocks.
+The maximization then reduces to $k$ smaller SDPs for which the solutions can be found more efficiently.
+These could even be distributed in several computation nodes.
+Picking $\covmapprox$ is a compromise between available computation time and eventual power of the procedure.
+There is a priori no ideal way to to it.
