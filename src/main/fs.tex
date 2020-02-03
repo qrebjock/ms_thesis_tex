@@ -623,9 +623,33 @@ in $\left\{ \cC^+,\, \cC^- \right\}$.
 
 \subsection{Python implementation}\label{subsec:python_implementation}
 
-Barber-Candès (along with other coauthor) provided a R implementation
+Barber-Candès (along with other coauthor) provided a R and MATLAB implementation
 of the knockoff framework\footnote{
-The package page can be found at this address \url{https://cran.r-project.org/web/packages/knockoff/index.html}.
+    The R package page can be found at
+    \href{https://cran.r-project.org/web/packages/knockoff/index.html}{this address}.
+    Sources for both R and MATLAB are stored in this
+    \href{https://github.com/msesia/knockoff-filter}{GitHub repository}.
 }.
 To the best of our knowledge, no unified Python implementation
-Scikit-Learn~\cite{sklearn}
+The implementation follows deliberately the Scikit-Learn~\cite{sklearn} structure.
+It provides 3 main components,
+namely a knockoffs generator \code{KnockoffsGenerator},
+statistics computations utility functions,
+and a selector \code{BaseKnockoffsSelector}.
+\code{KnockoffsGenerator} and \code{BaseKnockoffsSelector} subclass \code{BaseEstimator} and \code{TransformerMixin}
+and \code{BaseEstimator} and \code{SelectorMixin} respectively.
+
+\begin{calgorithm}
+\begin{minted}[linenos]{python}
+selector = SimpleKnockoffsSelector(
+    GaussianXKnockoffs(),
+    z_to_w_statistics(estimator_statistics(estimator=LassoCV())),
+    alpha=0.2,
+)
+
+selector.fit(X, y)
+\end{minted}
+\caption{
+    Basic knockoffs usage
+}\label{code:python_knockoffs}
+\end{calgorithm}

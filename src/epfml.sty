@@ -29,7 +29,11 @@
 \usepackage{placeins}
 \usepackage{wrapfig}
 \usepackage{subcaption}
+\usepackage{listings}
 \usepackage{minted}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{scrhack}
 
 \providecommand{\lin}[1]{\ensuremath{\left\langle #1 \right\rangle}}
 \providecommand{\abs}[1]{\left\lvert#1\right\rvert}
@@ -183,12 +187,16 @@
   \providecommand{\tcovm}{2\Sigma}
   \providecommand{\tcovmapprox}{2\Sigma_\text{approx}}
   \newcommand\argdot{{\hspace{0.18em}\cdot\hspace{0.18em}}}
+  \newcommand\code[1]{\texttt{#1}}
 
+\newenvironment{calgorithm}[1][htb]{%
+\floatname{algorithm}{Code}% Update algorithm name
+\begin{algorithm}[#1]%
+}{\end{algorithm}}
 
 % theorem style
 \RequirePackage{thmtools}
 % \RequirePackage[dvipsnames]{xcolor}
-
 
 \definecolor{shadecolorr}{gray}{0.95}
 \newcommand{\@thmshade}{white}

@@ -187,8 +187,6 @@
 
 \RequirePackage{scrbase} % Required for handling language-dependent names of sections/document elements
 
-\RequirePackage{scrhack} % Loads fixes for various packages
-
 \RequirePackage{setspace} % Required for changing line spacing
 
 \RequirePackage{longtable} % Required for tables that span multiple pages (used in the symbols, abbreviations and physical constants pages)
