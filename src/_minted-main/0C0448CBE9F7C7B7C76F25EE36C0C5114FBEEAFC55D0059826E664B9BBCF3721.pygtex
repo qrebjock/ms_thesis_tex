@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+    \PYG{n}{a} \PYG{o}{=} \PYG{n}{b}
+    \PYG{k}{def} \PYG{n+nf}{x}\PYG{p}{():}
+        \PYG{n}{q} \PYG{o}{=} \PYG{l+m+mi}{1}
+        \PYG{k}{return} \PYG{l+m+mi}{3}
+\end{Verbatim}
