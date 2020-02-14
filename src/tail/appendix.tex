@@ -1,4 +1,35 @@
 \appendix
 \chapter{An appendix}\label{ch:appendix}
 
-An appendix
+\section{SCS and MOSEK convergence times}\label{sec:cvx_times}
+
+Experiments were run in Python using CVX~\cite{cvx} through the Python wrapper CVXPY~\cite{cvxpy}.
+Table~\ref{tab:cvx_times_ps} shows the values of $p$ that were used.
+We restrained the parameter $p$ for MOSEK as it didn't scale as well as SCS\@.
+\begin{table}[!htb]
+    \centering
+    \setlength{\tabcolsep}{2pt}
+    {\small
+    \begin{tabular}{|c|c|}\hline
+    \textbf{SCS} & \textbf{MOSEK}\\ \hline
+        10 & 10\\ \hline
+        25 & 25\\ \hline
+        50 & 50\\ \hline
+        125 & 125\\ \hline
+        250 & 150\\ \hline
+        500 &\\ \hline
+        1000 &\\ \hline
+        2000 &\\ \hline
+    \end{tabular}
+    }%
+    \caption[short]{
+        Orders of matrices used.
+    }
+    \label{tab:cvx_times_ps}
+\end{table}
+For each $p$, 5 replications were performed with matrices of the form $M = D + U \Lambda U^\top$ where $D$ is diagonal,
+$\diag D \sim \cU\left[ 0,\, 1 \right]$, $U \in \R^{p \times k}$ for $k = 1,\, 5,\, 10,\, 20,\, 50$
+are orthonormal random matrices, and $\Lambda \in \R^{k \times k}$ is diagonal and
+$\diag \Lambda^2 \sim \cU\left[ 0,\, 1 \right]$.
+No significant difference was measured when changing $k$, even for large values.
+The convergence is however much slower if $D$ is scaled up.

@@ -35,6 +35,7 @@
 \usepackage{minted}
 \usepackage{float}
 \usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{scrhack}
 
 \providecommand{\lin}[1]{\ensuremath{\left\langle #1 \right\rangle}}
@@ -185,9 +186,13 @@
   \providecommand{\fdrtarget}{q}
   \providecommand{\pvalue}{p}
   \providecommand{\covm}{\Sigma}
-  \providecommand{\covmapprox}{\Sigma_\text{approx}}
-  \providecommand{\tcovm}{2\Sigma}
-  \providecommand{\tcovmapprox}{2\Sigma_\text{approx}}
+  \providecommand{\cove}{\hat{\covm}}
+  \providecommand{\covmapprox}{\covm_\text{approx}}
+  \providecommand{\coveapprox}{\cove_\text{approx}}
+  \providecommand{\tcovm}{2\covm}
+  \providecommand{\tcove}{2\cove}
+  \providecommand{\tcovmapprox}{2\covm_\text{approx}}
+  \providecommand{\tcoveapprox}{2\cove_\text{approx}}
   \newcommand\argdot{{\hspace{0.18em}\cdot\hspace{0.18em}}}
   \newcommand\code[1]{\texttt{#1}}
 
