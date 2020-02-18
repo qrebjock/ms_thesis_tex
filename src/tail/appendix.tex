@@ -1,5 +1,5 @@
 \appendix
-\chapter{An appendix}\label{ch:appendix}
+\chapter{Data generation details}\label{ch:appendix_data}
 
 \section{SCS and MOSEK convergence times}\label{sec:cvx_times}
 
@@ -33,3 +33,121 @@ are orthonormal random matrices, and $\Lambda \in \R^{k \times k}$ is diagonal a
 $\diag \Lambda^2 \sim \cU\left[ 0,\, 1 \right]$.
 No significant difference was measured when changing $k$, even for large values.
 The convergence is however much slower if $D$ is scaled up.
+
+\section{Coordinate descent}\label{sec:coordinate_descent_data}
+
+
+
+\chapter{Linear algebra notes}\label{ch:linear_algebra}
+
+\section{Schur complement and positive definiteness}\label{sec:schur_complement}
+
+Let $X = \begin{bmatrix}
+             A & B^\top\\
+             B & C
+    \end{bmatrix}$
+be a symmetric matrix where $A$ and $C$ are invertible.
+\begin{definition}
+    The Schur complements $X_{/A}$ and $X_{/C}$ are defined as follows:
+    \begin{equation*}
+        X_{/A} = C - B A^{-1} B^\top
+        ,\qquad
+        X_{/C} = A - B^\top C^{-1} B
+    \end{equation*}
+\end{definition}
+Schur complements give a way to characterize the fact that X is positive definite and positive semidefinite.
+\begin{theorem}
+    The following three properties are equivalent:
+    \begin{enumerate}
+        \item $X \succ \0$
+        \item $A \succ \0$ and $X_{/A} \succ \0$
+        \item $C \succ \0$ and $X_{/C} \succ \0$
+    \end{enumerate}
+    As well as the three following:
+    \begin{enumerate}
+        \item $X \succeq \0$
+        \item $A \succ \0$ and $X_{/A} \succeq \0$
+        \item $C \succ \0$ and $X_{/C} \succeq \0$
+    \end{enumerate}
+\end{theorem}
+\begin{proof}
+    $X$ can be factorized as follows
+    \begin{equation*}
+        X = \begin{bmatrix}
+            I & \0\\
+            B^\top C^{-1} & I
+        \end{bmatrix}^\top
+        \begin{bmatrix}
+            A - B^\top C^{-1}B & \0\\
+            \0 & C
+        \end{bmatrix}
+        \begin{bmatrix}
+            I & \0\\
+            B^\top C^{-1} & I
+        \end{bmatrix}
+    \end{equation*}
+    which means that $X = Q^\top D Q$ where $D$ is a block-diagonal matrix.
+    Therefore $X \succ \0$ (resp. $\succeq \0$) if and only if $D \succ \0$ (resp. $\succeq \0$),
+    which is equivalent to its diagonal blocks to be $\succ \0$ (resp. $\succeq \0$).
+    To get the same result with the complement $X_{/A} = C - B A^{-1} B^\top$,
+    we use the factorization
+    \begin{equation*}
+        X = \begin{bmatrix}
+            I & \0\\
+            BA^{-1} & I
+        \end{bmatrix}
+        \begin{bmatrix}
+            A & \0\\
+            \0 & C - BA^{-1}B^\top
+        \end{bmatrix}
+        \begin{bmatrix}
+            I & \0\\
+            BA^{-1} & I
+        \end{bmatrix}^\top
+    \end{equation*}
+\end{proof}
+
+Consider the particular partition
+$X = \begin{bmatrix}
+    \xi & \yy^\top\\
+    \yy & B
+\end{bmatrix}$
+where $B$ is invertible.
+Then a direct application of the theorem above gives that
+\begin{equation*}
+    \begin{cases}
+        X \succ \0 \iff B \succ \0 \text{ and } \xi > \yy^\top B^{-1} \yy\\
+        X \succeq \0 \iff B \succ \0 \text{ and } \xi \geq \yy^\top B^{-1} \yy
+    \end{cases}
+\end{equation*}
+
+More results regarding Schur complements can be found in~\cite{schur_complement}.
+A generalization involving pseudo-inverses of $A$ and $C$ when they are singular is possible.
+
+\section{Sherman–Morrison–Woodbury formula}\label{sec:sherman}
+
+The Sherman-Morrison formula gives a way to calculate the inverse of the sum of an invertible matrix
+$M \in \R^{p \times p}$
+and a rank-1 update $uv^\top$.
+\begin{theorem}
+    (Sherman-Morrison) Let $u,\, v \in \R^p$.
+    Then,
+    \begin{equation*}
+        \big( M + uv^\top \big)^{-1} = M^{-1} - \frac{M^{-1}uv^\top M^{-1}}{1 + v^\top M^{-1}u}
+    \end{equation*}
+\end{theorem}
+It can be generalized to a rank-k update $UV$ as follows.
+\begin{theorem}
+    (Woodbury) Let $U,\, V \in \R^{p \times k}$.
+    Then,
+    \begin{equation*}
+        \big( M + UV^\top \big)^{-1} = M^{-1} - M^{-1}U \left( I + V^\top M^{-1}U \right)^{-1}V^\top M^{-1}
+    \end{equation*}
+\end{theorem}
+Proofs and further details regarding these formulas can be found in~\cite{woodbury}.
+
+    If $P$ is nonsingular and $M = \begin{bmatrix}
+    P & Q\\
+    R & S
+\end{bmatrix}$,
+then $\det M = \det(P)\det(R - RP^{-1}Q)$.

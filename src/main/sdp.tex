@@ -33,7 +33,8 @@ It is however trickier to identify all vectors $\bs$ satisfying the second one.
 
 In this chapter, we show why the choice of $\bs$ is important and how to efficiently find a good one
 in the high dimensional setting.
-In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its estimation from the samples $X$.
+In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its estimation from the samples $X$
+(be it empirical or derived from more sophisticated methods).
 
 \section{Equi-correlated knockoffs}\label{sec:equi}
 
@@ -66,10 +67,13 @@ If $\tcX$ is built according to~\ref{eq:conditional_gaussian_knockoffs}, it sati
 First, $\tcX$ has the same internal covariance has $\cX$,
 and two distinct original and knockoff features have the same covariance
 as the one of the two corresponding original features.
-It makes the knockoff feature sufficiently close to the original features
+It makes the knockoff features sufficiently close to the original features
 to fool the estimator computing the statistics.
 However, an original feature $j$ and its corresponding knockoff have a covariance that is smaller the larger $s_j$ is.
-If $s_j$ is $0$, $\cX_j$ couldn't be distinguished from $\tcX_j$ and the selection would suffer from a low power.
+If $s_j$ is close to $0$,
+$\cX_j$ cannot be distinguished from $\tcX_j$ and the selection would suffer from a low power.
+
+This fact is even more detrimental when $p$ is large as $\lambda_{\min}$ is likely to be very close to $0$.
 It motivates us to maximize the sum of the entries of $\bs$ and it leads to solving a SDP\@.
 
 \section{SDP knockoffs}\label{sec:sdp}
@@ -91,10 +95,12 @@ $p$ by interior point methods~\cite{interior_point_method_sdp} for example.
 For larger values of $p$, even first order methods like
 SCS~\cite{sdp_scs} or alternating direction~\cite{sdp_admm}
 quickly become intractable.
+In memory, it needs roughly $\cO(m^2)$ where $m$ is the number of constraints.
 Even though the convergence speed depends a lot on $\covm$,
 it experimentally appears that alternative methods have to be considered when $p > 1000$.
 The Figure~\ref{fig:cvx_sdp_times} shows the convergence time of the solvers SCS and MOSEK as a function of $p$.
-Theoretically, it takes $\cO(p^3)$.
+Theoretically, it takes $\cO(p^3)$ and it is clear that when $p$ is more than a few thousands.
+Moreover, most solutions returned by these algorithms are actually infeasible because of numerical approximations.
 
 \begin{figure}
     \centering
@@ -104,6 +110,7 @@ Theoretically, it takes $\cO(p^3)$.
         as a function of $p$ (in log-log scale).
         Rapidly, MOSEK needs too much memory and can't be run for $p > 150$.
         Both match the theoretical $\cO(p^3)$ rate and SCS already needs 15 minutes for $p = 1000$.
+        See Appendix~\ref{sec:cvx_times} for details on the data generation.
     }
     \label{fig:cvx_sdp_times}
 \end{figure}
@@ -148,6 +155,105 @@ The block diagonal assumption depends on the order of the features.
 They should therefore be reordered ahead of time,
 typically by performing a clustering step to group very similar features.
 
+\section{A coordinate descent approach}\label{sec:coordinate_descent}
+
+\subsection{Notations and preliminaries}\label{subsec:notations_preliminaries}
+
+Let $M \in \cS^p$.
+Given two sets of indices $\cI,\,\cJ \in \fset$,
+we note $M_{\cI,\,\cJ}$ the $\abs{\cI} \times \abs{\cJ}$ matrix obtained by keeping
+the $\abs{\cI}$ rows and $\abs{\cJ}$ columns indexed by $\cI$ and $\cJ$ respectively.
+By convenience, an integer $j$ denotes the set $\left\{ j \right\}$ and $j^c$ $\fset \setminus \left\{ j \right\}$
+in the matrix subscripting context.
+For example, if $M = \begin{bmatrix}
+    1 & 2 & 3\\
+    4 & 5 & 6\\
+    7 & 8 & 9
+\end{bmatrix}$,
+then $M_{1^c, 1^c} = \begin{bmatrix}
+    5 & 6\\
+    8 & 9
+\end{bmatrix}$
+and $M_{1^c, 1} = \begin{bmatrix}
+    4\\
+    7
+\end{bmatrix}$.
+
+\bigbreak
+Suppose $M$ is structured as
+\begin{equation*}
+    M = \begin{bmatrix}
+        \xi & \yy^\top\\
+        \yy & B
+    \end{bmatrix}
+\end{equation*}
+where $B$ is symmetric.
+\begin{lemma}
+    Using Schur complements (see Appendix~\ref{sec:schur_complement}), M is psd if and only if
+    \begin{equation*}
+        B \succeq \0
+        \quad\text{and}\quad
+        \xi - \yy^\top B^{-1} \yy \geq 0
+    \end{equation*}
+\end{lemma}
+In subscript notations, this is equivalent to $M_{1^c,\, 1^c} \succeq \0$ and
+$M_{1,\, 1} - M_{1^c,\, 1}^\top M_{1^c,\, 1^c} M_{1^c,\, 1} \geq 0$.
+This statement can be generalized as follows.
+For any $j \in \fset$, M is psd if and only if both conditions are satisfied
+\begin{equation}\label{eq:psd_schur_permutation}
+    \begin{cases}
+        M_{j^c,\, j^c} \succeq \0\\
+        M_{j,\, j} - M_{j^c,\, j}^\top M_{j^c,\, j^c} M_{j^c,\, j} \geq 0
+    \end{cases}
+\end{equation}
+\begin{proof}
+    Let $j \in \fset$.
+    Let $P$ be the permutation matrix changing $1 \leftrightarrow j$ and letting other columns unchanged.
+    In two-line form, it is written
+    \begin{equation*}
+        P = \begin{pmatrix}
+                1 & 2 & \dots & j - 1 & j & j + 1 & \dots & p\\
+                j & 2 & \dots & j - 1 & 1 & j + 1 & \dots & p
+        \end{pmatrix}
+    \end{equation*}
+    M is psd if and only if $P^\top M P$ is psd.
+    $P^\top M P$ is $M$ with lines and columns $1$ and $j$ swapped.
+    By applying Lemma~\ref{}, we get the result.
+\end{proof}
+
+\subsection{Coordinate ascent}\label{subsec:coordinate_ascent}
+
+The previous observation will be useful to characterize the feasibility of a potential solution $\bs$ of the SDP\@.
+Using~\ref{eq:psd_schur_permutation},
+it appears that the feasibility of $\bs$ is equivalent to the three following conditions,
+for any $j \in \fset$
+\begin{equation}\label{eq:schur_sdp_constraints}
+    \tcove \succeq \diag \bs \succeq \0
+    \iff
+    \begin{cases}
+        \bs \geq \0\\
+        \tcove_{j,\, j} - s_j
+            - 4\cove_{j^c,\, j}^\top\Big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \Big)^{-1}\cove_{j^c,\, j} \geq 0\\
+        \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \succeq \0
+    \end{cases}
+\end{equation}
+This observation motivates the following approach, as described in~\cite{block_coordinate_sdp}.
+Start with a feasible solution $\bs_0$, for example $\bs_0 = \0_p$.
+At each iteration, only one coordinate $j$ of $\bs$ will be updated by optimizing
+a sub-objective.
+As only the coordinates $j$ changes, the constraints remain satisfied if we pick $s_j$ to satisfy
+\begin{equation*}
+    \begin{cases}
+        s_j \geq \0\\
+        s_j \leq \tcove_{j,\, j}
+            - 4\cove_{j^c,\, j}^\top\Big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \Big)^{-1}\cove_{j^c,\, j}
+    \end{cases}
+\end{equation*}
+
+\subsection{Log-barrier}\label{subsec:log_barrier}
+
+
+
 \section{Low-rank covariance matrix approximation}\label{sec:low_rank_sigma}
 
 A~\cite{big_data_low_rank}
@@ -175,70 +281,53 @@ A~\cite{big_data_low_rank}
 
 \subsection{Efficient low-rank sampling}\label{subsec:low_rank_sampling}
 
-The estimated covariance $\cove$ is $p \times p$ and the problem becomes intractable when $p$ is large.
-The covariance matrix $\Sigma$ is approximated by a diagonal $D \in \R^{p \times p}$ plus a low rank.
-\begin{equation*}
-    \Sigma = D + UU^\top,
-    \qquad
-    \text{where }
-    U \in \R^{p \times k}
-\end{equation*}
-The joint vector $\big[ \cX,\, \tcX \big]$ is supposed to follow a normal
-$\cN\left( \0_{2p \times 2p},\, \Omega \right)$
-where
-\begin{equation*}
-    \Omega = \begin{bmatrix}
-                 \Sigma & \Sigma - \diag \bs\\
-                 \Sigma - \diag \bs & \Sigma
-    \end{bmatrix}
-\end{equation*}
-and $\bs$ is the vector returned by the SDP\@.
-Note $S = \diag\bs$.
-As we sample from $\cX \mid \tcX$,
-we need to sample from a normal with the following parameters
-\begin{equation*}
-    \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
-    ,\qquad\text{where}\quad
-    \begin{cases*}
-        \bupsilon = \cX - \cX\Sigma^{-1}S\\
-        \Upsilon = 2S - S\Sigma^{-1}S
-    \end{cases*}
-\end{equation*}
-Using the Sherman-Morrison-Woodbury formula we get
+In this section, we detail briefly how to sample $\zz \sim \cN\left( \bupsilon,\, \Upsilon \right)$ once
+a feasible $\bs$ is computed, and in the special case where $\cove = D + U\Lambda U^\top$.
+A classical approach to sample from a multivariate normal distribution is to sample first a vector
+$\tilde{\zz} \in \R^p$ from $\cN\left( 0,\, 1 \right)$,
+and then pose $\zz = \bupsilon + L\tilde{\zz}$,
+where $L$ is a lower Cholesky factorization of $\Upsilon$.
+This uses the fact that if $\xx \sim \cN\big( \mu,\, \Sigma \big)$,
+then
+\begin{equation}\label{eq:affine_transformation}
+    A\xx + \bb \sim \cN\big( A\bmu + \bb,\, A\Sigma A^\top \big)
+\end{equation}
+Note that this scheme works even if $L$ is not lower-triangular,
+but only satisfies $LL^\top = \Upsilon$.
+
+As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
+nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
+We show here how to factorize $\Upsilon$ is a cheap way,
+requiring only $\cO\left( k \cdot p \right)$ memory and $\cO\left( k\cdot p^2 \right)$ operations.
+As shown in~\ref{subsubsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
+Using the low-rank structure $\cove = D + U\Lambda U^\top$,
+the Sherman–Morrison–Woodbury formula (see Appendix~\ref{sec:sherman}) gives
 \begin{align*}
-    \Sigma^{-1} &= (D + UU^\top)^{-1}\\
+    \cove^{-1} &= (D + UU^\top)^{-1}\\
     &= D^{-1} - D^{-1}U(I_k + U^\top D^{-1}U)^{-1}U^\top D^{-1}
 \end{align*}
-Note $(I_k + U^\top D^{-1}U)^{-1} = LL^\top$, $V = SD^{-1}UL$ and $C = 2S - SD^{-1}S$
-($L$ can be computed efficiently if $k$ is small).
-Then
+Note $L \in \R^{k \times k}$ the lower Cholesky factorization of
+$(I_k + U^\top D^{-1}U)^{-1}$ (which can be computed efficiently if $k$ is small),
+$V = SD^{-1}UL \in \R^{p \times k}$,
+and $C = 2S - SD^{-1}S$.
+Then the covariance reduces to
 \begin{equation*}
     \Upsilon = C + VV^\top
 \end{equation*}
-$C$ is diagonal and $VV^\top$ rank $k$.
-Using Cholesky updates has two issues here:
-\textit{(i)} $C$ is not necessarily psd which makes Cholesky rank-1 updates unstable or even infeasible,
-and \textit{(ii)} the updates of the Cholesky factor are not low rank,
-which means we have to store the full matrix and it's not desirable if $p$ is large.
-But if $\cX \sim \cN\left( \0,\, I \right)$,
-$A\cX \sim \cN\left( \0,\, AA^\top \right)$ even if $A$ is not triangular.
-So we don't need a Cholesky decomposition but just a factorization of the form $MM^\top$.
-
-The fact that $C$ is not necessarily psd is painful and I found no other solution
-than sampling from a complex gaussian.
-Let $H$ be a square-root of $C$ (with potentially imaginary numbers on the diagonal),
-and $P = H^{-1}V$.
+where $C$ is diagonal and $VV^\top$ has rank at most $k$.
+$C$ is not necessarily psd, which will force us to sample from a complex normal distribution.
+Let $H$ be a complex square-root of $C$ (thus, potentially with imaginary numbers on the diagonal),
+and $P = H^{-1}V \in \R^{p \times k}$.
 Then,
 \begin{equation*}
-    \Upsilon = H(I_{p \times p} + PP^\top)H^\top
+    \Upsilon = H \left( I_{p \times p} + PP^\top \right) H^\top
 \end{equation*}
-Here using Cholesky rank-1 updates on $I_{p \times p} + PP^\top$ would be possible but
-we would have to store a $p \times p$ matrix which is not good if $p$ is large.
-Another factorization is possible;
-note
+$\left( I_{p \times p} + PP^\top \right)$ can be factorized in the following way.
+Note
 \begin{equation*}
-    W = \left(I_{k \times k} + \sqrt{I_{k \times k} + P^\top P}\right)^{-1}
+    W = \left(I_{k \times k} + \sqrt{I_{k \times k} + P^\top P}\right)^{-1} \in \R^{k \times k}
 \end{equation*}
+where the square-root is a $k \times k$ matrix root (which can again be computed efficiently if $k$ is small).
 Then
 \begin{equation*}
     I_{p \times p} + PP^\top = BB^\top
@@ -247,24 +336,26 @@ Then
     \quad
     B = I_{p \times p} + PWP^\top
 \end{equation*}
-$B$ is $p \times p$ but we never have to fully evaluate it (only multiply by its internal factors).
+Finally, we note $M = HB$ and we have that $\Upsilon = MM^\top$.
+$B$ is $p \times p$ but we never have to fully evaluate it;
+instead only $W$ and $P$ can be stored and matrix multiplications are then at most $p \times k$.
 
-Finally, we note $M = HB$ and we have $\Upsilon = MM^\top$.
-$M$ is complex but if $\cX \sim \cN(\0,\, I)$ and $\cY = i\cX$,
+$M$ is a complex matrix so we cannot directly use the property~\ref{eq:affine_transformation}.
+But if $\cX \sim \cN(\0,\, I)$ and $\cY = i\cX$,
 then $\operatorname{Im}\left( M\cY \right) \sim \cN(\0,\, MM^\top = \Upsilon)$.
-It's not very optimal because multiplications with complex numbers are more costly.
-It looks like it's possible to avoid using them though, but the performance gain would be marginal.
-Using this scheme, with $p = 15\,000$ and $k = 100$ we can draw $n = 5\,000$ samples in $\approx 4.1$ seconds,
-while the naive method not taking into account the low rank approximation would need $\approx 185$ seconds.
-(In comparison sampling $5000 \times 15\,000$ numbers from $\cN(0, 1)$ takes $\approx 2.1$ seconds)
-It scales pretty well for larger $p$, $k$ and $n$ but I can't compare to the naive method as it takes too much
-memory.
-
+Using this scheme, with $p = 15\,000$ and $k = 100$ we can draw $n = 5\,000$ samples in $\approx 4$ seconds,
+while the naive method not taking into account the low rank approximation would need $\approx 180$ seconds.
+In comparison sampling $5000 \times 15\,000$ numbers from $\cN(0, 1)$ takes $\approx 2$ seconds.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
     \caption{
+        Convergence times of the low-rank coordinate ascent algorithm~\ref{} as a function of $p$ and $k$.
+        It confirms the theoretical $\cO(n_{\text{iters}} \cdot p \cdot k^3)$.
+        In practice,
+        the algorithm converges much faster to an appropriate solution when using a larger tolerance threshold.
+        See Appendix~\ref{sec:coordinate_descent_data} for details regarding the random data generation.
     }
     \label{fig:low_rank_times}
 \end{figure}

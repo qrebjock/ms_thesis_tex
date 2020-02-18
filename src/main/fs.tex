@@ -346,7 +346,7 @@ However, constructing knockoffs meeting the first distribution equality is pract
     the same as the correlation between the two originals.
 \end{remark}
 
-\subsubsection{Gaussian case}
+\subsubsection{Gaussian case}\label{subsubsec:gaussian_knockoffs}
 
 In the particular case where $\cX$ is multivariate gaussian, the exact distribution of $\tcX$ can be derived.
 \begin{proposition}
@@ -648,6 +648,7 @@ selector = SimpleKnockoffsSelector(
 )
 
 selector.fit(X, y)
+print(f'Selected features: {selector.mask_}')
 \end{minted}
 \caption{
     Basic knockoffs usage
