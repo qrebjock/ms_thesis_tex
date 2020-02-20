@@ -8,7 +8,7 @@ $\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs
     ,\qquad\text{where}\quad
     \begin{cases*}
         \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
-        \Upsilon = \diag(\bs)\left( 2\mI_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+        \Upsilon = \diag(\bs)\left( 2I_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
     \end{cases*}
 \end{equation}
 More generally, the same parameters are derived by only imposing
@@ -47,7 +47,7 @@ It gives a fast and simple way to find a feasible $\bs$.
     \quad\text{ for all } 0 \leq j \leq p
 \end{equation}
 The problem of finding the smallest eigenvalue $\lambda_{\min}(\cove)$ can be solved efficiently,
-using for instance a singular value decomposition which runs in $\cO(p)$ steps~\cite{svd}.
+using for instance a singular value decomposition which runs in $\cO(p^3)$ steps~\cite{svd}.
 
 \subsubsection{Why it is not desirable}
 
@@ -118,14 +118,14 @@ Moreover, most solutions returned by these algorithms are actually infeasible be
 In order to reduce the computation time,
 Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below.
 \paragraph*{Step 1.}
-Pick an approximation $\Sigma_\text{approx}$ of $\Sigma$ and solve
+Pick an approximation $\coveapprox$ of $\cove$ and solve
 \begin{equation}\label{eq:sdp_approx}
     \underset{\hat{\bs} \in \R^p}{\argmax}\;\,
     \sum_{j = 1}^p \hat{s}_j
     \qquad
     \text{subject to } \begin{cases}
         \hat{s}_j \geq 0\text{ for all } j\\
-        \diag \hat{\bs} \preceq \tcovmapprox
+        \diag \hat{\bs} \preceq \tcoveapprox
     \end{cases}
 \end{equation}
 \paragraph*{Step 2.}
@@ -133,33 +133,34 @@ Solve the one dimensional maximization
 \begin{equation}\label{eq:sdp_approx_1d}
     \underset{\gamma \in \R}{\argmax}\;\,\gamma
     \quad\text{subject to}\quad
-    \diag\left( \gamma \cdot \hat{\bs} \right) \preceq 2\Sigma
+    \diag\left( \gamma \cdot \hat{\bs} \right) \preceq \tcove
 \end{equation}
 Finally, pick $\bs = \gamma \cdot \hat{\bs}$.
 
 \begin{remark}
-    Note that the two extreme options $\covmapprox = \mI$ and $\covmapprox = \Sigma$ yield
+    Note that the two extreme options $\coveapprox = \mI$ and $\coveapprox = \cove$ yield
     the same solutions as solving equi-knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
 \end{remark}
 
 Solving~\ref{eq:sdp_approx_1d} in step 2 can be done very efficiently using bisection as it is a one-dimensional SDP\@.
 The optimization problem~\ref{eq:sdp_approx} is however the same as the one in~\ref{eq:sdp},
-except for the approximation $\covmapprox$.
+except for the approximation $\coveapprox$.
 To speed up the computations,
-$\covmapprox$ can be chosen to be a block-diagonal matrix of $k$ blocks.
+$\coveapprox$ can be chosen to be a block-diagonal matrix of $k$ blocks.
 The maximization then reduces to $k$ smaller SDPs for which the solutions can be found more efficiently.
 These could even be distributed in several computation nodes.
-Picking $\covmapprox$ is a compromise between available computation time and eventual power of the procedure.
+Picking $\coveapprox$ is a compromise between available computation time and eventual power of the procedure.
 There is a priori no ideal way to to it.
 The block diagonal assumption depends on the order of the features.
 They should therefore be reordered ahead of time,
 typically by performing a clustering step to group very similar features.
 
-\section{A coordinate descent approach}\label{sec:coordinate_descent}
+\section{A coordinate ascent approach}\label{sec:coordinate_ascent}
 
 \subsection{Notations and preliminaries}\label{subsec:notations_preliminaries}
 
-Let $M \in \cS^p$.
+\paragraph{Notations.}
+Let $M \in \R^{p \times p}$.
 Given two sets of indices $\cI,\,\cJ \in \fset$,
 we note $M_{\cI,\,\cJ}$ the $\abs{\cI} \times \abs{\cJ}$ matrix obtained by keeping
 the $\abs{\cI}$ rows and $\abs{\cJ}$ columns indexed by $\cI$ and $\cJ$ respectively.
@@ -179,7 +180,7 @@ and $M_{1^c, 1} = \begin{bmatrix}
     7
 \end{bmatrix}$.
 
-\bigbreak
+\paragraph{Positiveness characterisation.}
 Suppose $M$ is structured as
 \begin{equation*}
     M = \begin{bmatrix}
@@ -188,8 +189,8 @@ Suppose $M$ is structured as
     \end{bmatrix}
 \end{equation*}
 where $B$ is symmetric.
-\begin{lemma}
-    Using Schur complements (see Appendix~\ref{sec:schur_complement}), M is psd if and only if
+\begin{lemma}\label{lemma:schur1}
+    Using Schur complements (see Appendix~\ref{sec:schur_complement}), it holds that M is psd if and only if
     \begin{equation*}
         B \succeq \0
         \quad\text{and}\quad
@@ -218,7 +219,7 @@ For any $j \in \fset$, M is psd if and only if both conditions are satisfied
     \end{equation*}
     M is psd if and only if $P^\top M P$ is psd.
     $P^\top M P$ is $M$ with lines and columns $1$ and $j$ swapped.
-    By applying Lemma~\ref{}, we get the result.
+    By applying Lemma~\ref{lemma:schur1}, we get the result.
 \end{proof}
 
 \subsection{Coordinate ascent}\label{subsec:coordinate_ascent}
@@ -233,7 +234,7 @@ for any $j \in \fset$
     \begin{cases}
         \bs \geq \0\\
         \tcove_{j,\, j} - s_j
-            - 4\cove_{j^c,\, j}^\top\Big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \Big)^{-1}\cove_{j^c,\, j} \geq 0\\
+            - 4\cove_{j^c,\, j}^\top\big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \big)^{-1}\cove_{j^c,\, j} \geq 0\\
         \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \succeq \0
     \end{cases}
 \end{equation}
@@ -242,42 +243,228 @@ Start with a feasible solution $\bs_0$, for example $\bs_0 = \0_p$.
 At each iteration, only one coordinate $j$ of $\bs$ will be updated by optimizing
 a sub-objective.
 As only the coordinates $j$ changes, the constraints remain satisfied if we pick $s_j$ to satisfy
-\begin{equation*}
+\begin{equation}\label{eq:sdp_simple_constraints}
     \begin{cases}
-        s_j \geq \0\\
+        s_j \geq 0\\
         s_j \leq \tcove_{j,\, j}
-            - 4\cove_{j^c,\, j}^\top\Big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \Big)^{-1}\cove_{j^c,\, j}
+            - 4\cove_{j^c,\, j}^\top\big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \big)^{-1}\cove_{j^c,\, j}
     \end{cases}
-\end{equation*}
+\end{equation}
+that is,
+$s_j = \max\Big( \tcove_{j,\, j}
+    - 4\cove_{j^c,\, j}^\top\big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \big)^{-1}\cove_{j^c,\, j}
+    ,\, 0 \Big)
+$.
+Unfortunately, this method is not guaranteed to converge to the global maximum, even when the problem is concave.
+A slight modification will save us.
 
 \subsection{Log-barrier}\label{subsec:log_barrier}
 
+Instead of optimizing~\ref{eq:sdp},
+we absorb the constraint $\tcove \succeq \bs$ into the objective as described in §11.3 of~\cite{convex_optimization}.
+It depends on an additional term
+$\lambda \cdot \log\det\big( \tcove - \diag\bs \big)$
+for some coefficient $\lambda > 0$.
+\begin{equation}\label{eq:sdp_log_barrier}
+    \underset{\bs \in \R^p}{\argmax}\;\,
+    \sum_{j = 1}^p s_j
+    + \lambda \cdot \log\det\big( \tcove - \diag\bs \big)
+    \qquad
+    \text{subject to }
+    s_j \geq 0\text{ for all } j
+\end{equation}
+where we consider that $\log 0 = -\infty$.
+Intuitively, a solution $\bs$ such that the minimum eigenvalue of $\tcove - \diag\bs$ gets too close to $0$
+will be penalized by this $\log$ term.
 
+In order to perform coordinate ascent, we are going to use the following lemma.
+\begin{lemma}
+    If $M = \begin{bmatrix}
+        \xi & \yy^\top\\
+        \yy & B
+    \end{bmatrix}$,
+    then
+    \begin{align*}
+        \det\left( M \right) &= \det\big( \xi - \yy^\top B^{-1} \yy \big) \cdot \det\left( B \right)\\
+        &= \big( \xi - \yy^\top B^{-1} \yy \big) \cdot \det\left( B \right)
+    \end{align*}
+\end{lemma}
+\begin{proof}
+    It is an immediate consequence of the formula for the determinant of a block matrix
+    given in Appendix~\ref{sec:block_matrix_det}.
+\end{proof}
+With the subscript notations, this identity can be noted as
+$\det\left( M \right) = \big( M_{1,\, 1} - M_{1^c,\, 1}^\top M_{1^c,\, 1^c}^{-1} M_{1^c,\, 1} \big)
+    \cdot\det\left( M_{1^c,\, 1^c} \right)$.
+Employing the same idea as in~\ref{eq:psd_schur_permutation},
+it can further be generalized to
+\begin{equation*}
+    \det\left( M \right) = \big( M_{j,\, j} - M_{j^c,\, j}^\top M_{j^c,\, j^c}^{-1} M_{j^c,\, j} \big)
+        \cdot\det\left( M_{j^c,\, j^c} \right)
+\end{equation*}
+for any $j \in \fset$.
+\bigbreak
+By applying it to $\log\det\big( \tcove - \diag\bs \big)$,
+we get that for any $j \in \fset$,
+\begin{equation*}
+    \log\det\big( \tcove - \diag\bs \big) =
+        \log\big( \tcove_{j,\, j} - s_j - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} \big)
+            + \log\det\left( Q_j \right)
+\end{equation*}
+where $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$ does not depend on $s_j$.
+The function
+\begin{equation*}
+    \alpha \mapsto \alpha
+        + \lambda\log\big( \tcove_{j,\, j} - \alpha - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} \big)
+\end{equation*}
+is concave and setting its derivative to $0$ yields that its maximum is
+\begin{equation*}
+    \alpha^\star = \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda
+\end{equation*}
+The $j$th coordinate is therefore updated as $s_j \leftarrow \max\left( \alpha^\star,\, 0 \right)$.
+Note in particular that this update maintains the feasibility
+conditions~\ref{eq:sdp_simple_constraints} for any value of $\lambda$.
+Section 11.3 of~\cite{convex_optimization} suggests that picking $\lambda = \epsilon / p$ will yield an
+$\epsilon$-optimal solution.
+In practice, an initial $\lambda_0$ is picked and after each coordinate cycle it is multiplied by a decay rate
+$0 < \mu < 1$.
+The choice of $\mu$ is a trade-off.
 
-\section{Low-rank covariance matrix approximation}\label{sec:low_rank_sigma}
-
-A~\cite{big_data_low_rank}
-
-\subsection{Efficient SDP solving}\label{subsec:low_rank_sdp}
-
-\begin{algorithm}
-    \caption{Forecast shifting}\label{alg:forecast_shifting}
+This log-barrier algorithm is summarized in Algorithm~\ref{alg:coordinate_ascent_log_barrier} in pseudo-code.
+It can be proven to converge to the maximum
+of the modified objective~\ref{eq:sdp_log_barrier}.
+It is indeed a particular case of Theorem~3 in~\cite{block_coordinate_sdp},
+which applies in this case as the constraints are simple,
+i.e. $\bs \geq \0$ is of the form $L \leq \diag\bs \leq U$.
+\begin{algorithm}[t]
+    \caption{Coordinate ascent with log-barrier}\label{alg:coordinate_ascent_log_barrier}
     \begin{algorithmic}[1]
-        \State \textbf{Input:} Approximation $\cove = D + U \Lambda U^\top$
-        \item[]
-        \State $z'_t \gets \text{quantile}_\alpha(z_t) \; \forall t$ \algorithmiccomment{\emph{(i)}}
-        \For{$t = n - 1,\dots, 1$}
-        \State $z'_t := \max(z'_t, z'_{t + 1} - \hat{\rho})$
+        \State \textbf{Input:} $\cove$, barrier coefficient $\lambda$, decay $\mu$, $\bs^{(0)} = \0_p$
+        \State $\bs = \bs^{(0)}$
+        \Repeat
+        \For{$j = 1,\,\dots,\, p$}
+        \State $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$
+        \State $s_j = \max\big( \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda,\, 0 \big)$
         \EndFor
-        \item[]
-        \State $\Delta_t \gets z'_t - z'_{t - 1}\; \forall t$ for $t = 2,\dots, n$ and $\Delta_1 = z'_1 - r_0$
-        \algorithmiccomment{\emph{(ii)}}
-        \State $\mathbf{r^+},\,\mathbf{r^-} \gets \max(\mathbf{\Delta}, 0),\,\min(\mathbf{\Delta}, 0)$
-        \item[]
-        \State Shift $\mathbf{r^+}$ and $\mathbf{r^-}$ in the past according to $\mathbb{E}$
-        and $\mathbb{E}$ respectively and request them.
+        \State $\lambda = \mu \cdot \lambda$
+        \Until{stopping criteria}
     \end{algorithmic}
 \end{algorithm}
+
+The bottleneck of Algorithm~\ref{alg:coordinate_ascent_log_barrier} is the inversion of the matrix
+$Q_j \in \R^{p - 1 \times p - 1}$ which takes $\cO\left( p^3 \right)$ steps.
+As it is done in every inner iteration, the algorithm's time complexity is
+$\cO\left( n_\text{iters} \cdot p^4 \right)$ when implemented naively.
+
+\section{Low-rank covariance approximation}\label{sec:low_rank_sigma}
+
+Covariance estimation in the high-dimensional setting ($p > n$ where $n$ is the number of samples)
+is challenging as the sample (empirical) covariance is not accurate.
+On top of that,
+if $p$ is larger than $10\,000-20\,000$ it becomes challenging to solely store the covariance in the memory
+of a standard computer.
+Hopefully, big data matrices and especially correlation matrices often have an underlying low-rank structure,
+or at least can be approximated adequately by such a low-rank estimate~\cite{big_data_low_rank}.
+An intuitive explanation is that there is only a small number of latent features explaining most of the data.
+
+In this section, we suppose that the estimated covariance matrix $\cove$ has the following structure
+\begin{equation*}
+    \cove = D + U \Lambda U^\top
+\end{equation*}
+where $U \in \R^{p \times k}$ satisfies $U^\top U = I_k$,
+and both $D \in \R^{p \times p},\, \Lambda \in \R^{k \times k}$
+are diagonal and psd.
+$k$ is typically much lower than $p$ to save has much memory and computations as possible.
+Even in the (likely) case where the covariance matrix is not exactly diagonal plus low-rank,
+this approximating structure is general enough to yield satisfying results.
+In~\cite{low_rank_cov_estimation} the authors study this covariance estimation setting and provide an
+efficient algorithm to build it.
+
+\subsection{Low-rank coordinate ascent}\label{subsec:low_rank_sdp}
+
+The complexity of Algorithm~\ref{alg:coordinate_ascent_log_barrier} can be drastically reduced
+to $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$
+by taking advantage of the special structure of $\cove$.
+Note $V = U \sqrt{\Lambda}$ so that $\cove = D + VV^\top$.
+Then,
+\begin{align*}
+    Q_j &= \tcove_{j^c,\, j^c} - \diag\bs_{j^c}\\
+    &= 2D_{j^c} - \diag\bs_{j^c} + 2V_{j^c,\, :}V_{j^c,\, :}^\top
+\end{align*}
+By noting $F = 2D_{j^c} - \diag\bs_{j^c}$ and using the Woodbury formula,
+\begin{equation*}
+    Q_j^{-1} =
+        F^{-1} - 2F^{-1}V_{j^c,\, :}
+            \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}
+                V_{j^c,\, :}^\top F^{-1}
+\end{equation*}
+It gives that in the inner loop, $s_j$ has to be updated with the quantity
+$\max\left( \alpha^\star,\, 0 \right)$ where
+\begin{equation*}
+    \alpha^\star =
+        \underbrace{
+            \tcove_{j,\, j}
+            - 4\cove_{j^c,\, j}^\top F^{-1} \cove_{j^c,\, j}
+            - \lambda
+        }_\text{$(*)$}
+        + \underbrace{
+            8\cove_{j^c,\, j}^\top F^{-1} V_{j^c,\, :}
+            \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}
+            V_{j^c,\, :}^\top F^{-1}\cove_{j^c,\, j}
+        }_\text{$(**)$}\\
+\end{equation*}
+The term $(*)$ can easily be evaluated,
+but computing $Q_j$ and its inverse in every inner loop would cost $\cO\left( k^3 \right)$ steps
+because of the inversion of the $k \times k$ matrix
+$M_j = \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}$
+in the term $(**)$.
+It can be reduced to $\cO\left( k^2 \right)$ using Sherman–Morrison rank-1 updates or,
+for a better numerical stability,
+$LDL^\top$ Cholesky rank-1 updates.
+Note $A$ the matrix
+\begin{equation*}
+    A = I_k + V^\top F^{-1} V
+\end{equation*}
+(which depends on $\bs$ as $F$ does).
+Then it can be observed that $M_j = A - F_{j,\, j} V_{j,\, :}V_{j,\, :}^\top$,
+so its inverse can simply be computed with a rank-1 update of the one of $A$.
+\begin{algorithm}
+    \caption{Low-rank coordinate ascent}\label{alg:low_rank_coordinate_ascent}
+    \begin{algorithmic}[1]
+        \State \textbf{Input:} approximation $\cove = D + U \Lambda U^\top$, barrier coefficient $\lambda$,
+            decay $\mu$, $\bs^{(0)} = \0_p$
+        \State $\bs = \bs^{(0)}$
+        \State $V = U \sqrt{\Lambda}$
+        \State $F = 2D - \diag\bs$
+        \State $A = I_k + V^\top F^{-1} V$
+        \Repeat
+        \For{$j = 1,\,\dots,\, p$}
+        \State $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$
+        \State $z = \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda$
+        \State $s_j = \max\left( z,\, 0 \right)$
+        \EndFor
+        \State $\lambda = \mu \cdot \lambda$
+        \Until{stopping criteria}
+    \end{algorithmic}
+\end{algorithm}
+
+This scheme is summarized in Algorithm~\ref{alg:low_rank_coordinate_ascent}.
+It uses at most $\cO\left( p \cdot k \right)$ memory ($F$ never has to be fully computed as it's a diagonal)
+and the time complexity is $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$, as stated above.
+However, numerical instabilities led us to perform it in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
+    \caption{
+        Convergence times of the low-rank coordinate ascent algorithm~\ref{alg:low_rank_coordinate_ascent}
+        as a function of $p$ and $k$.
+        It confirms the theoretical $\cO(n_{\text{iters}} \cdot p \cdot k^3)$.
+        In practice,
+        the algorithm converges much faster to an appropriate solution when using a larger tolerance threshold.
+        See Appendix~\ref{sec:coordinate_ascent_data} for details regarding the random data generation.
+    }
+    \label{fig:low_rank_times}
+\end{figure}
 
 \subsection{Efficient low-rank sampling}\label{subsec:low_rank_sampling}
 
@@ -297,9 +484,9 @@ but only satisfies $LL^\top = \Upsilon$.
 
 As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
 nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
-We show here how to factorize $\Upsilon$ is a cheap way,
+We show here how to factorize $\Upsilon$ in a cheap way,
 requiring only $\cO\left( k \cdot p \right)$ memory and $\cO\left( k\cdot p^2 \right)$ operations.
-As shown in~\ref{subsubsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
+As shown in~\ref{subsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
 Using the low-rank structure $\cove = D + U\Lambda U^\top$,
 the Sherman–Morrison–Woodbury formula (see Appendix~\ref{sec:sherman}) gives
 \begin{align*}
@@ -346,16 +533,3 @@ then $\operatorname{Im}\left( M\cY \right) \sim \cN(\0,\, MM^\top = \Upsilon)$.
 Using this scheme, with $p = 15\,000$ and $k = 100$ we can draw $n = 5\,000$ samples in $\approx 4$ seconds,
 while the naive method not taking into account the low rank approximation would need $\approx 180$ seconds.
 In comparison sampling $5000 \times 15\,000$ numbers from $\cN(0, 1)$ takes $\approx 2$ seconds.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
-    \caption{
-        Convergence times of the low-rank coordinate ascent algorithm~\ref{} as a function of $p$ and $k$.
-        It confirms the theoretical $\cO(n_{\text{iters}} \cdot p \cdot k^3)$.
-        In practice,
-        the algorithm converges much faster to an appropriate solution when using a larger tolerance threshold.
-        See Appendix~\ref{sec:coordinate_descent_data} for details regarding the random data generation.
-    }
-    \label{fig:low_rank_times}
-\end{figure}

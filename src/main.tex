@@ -34,13 +34,13 @@ headsepline, % Uncomment to get a line under the header
 %----------------------------------------------------------------------------------------
 
 \geometry{
-	paper=a4paper, % Change to letterpaper for US letter
-	inner=1.2cm, % Inner margin
-	outer=2.5cm, % Outer margin
-	bindingoffset=.5cm, % Binding offset
-	top=1.5cm, % Top margin
-	bottom=1.5cm, % Bottom margin
-	%showframe, % Uncomment to show how the type block is set on the page
+    paper=a4paper, % Change to letterpaper for US letter
+    inner=1.2cm, % Inner margin
+    outer=2.5cm, % Outer margin
+    bindingoffset=.5cm, % Binding offset
+    top=1.5cm, % Top margin
+    bottom=1.5cm, % Bottom margin
+%showframe, % Uncomment to show how the type block is set on the page
 }
 
 \frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
@@ -56,7 +56,6 @@ headsepline, % Uncomment to get a line under the header
     \setlength{\parskip}{0pt} %(needs to be before titlepage and frontmatter to keep the table of contents lists short)
     \frontmatter
     \input{head/titlepage.tex}
-    \include{head/dedication}
     \setcounter{page}{0}
     \include{head/acknowledgements}
     \include{head/abstract}
@@ -86,11 +85,13 @@ headsepline, % Uncomment to get a line under the header
     \include{main/introduction}
     \cleardoublepage
     \include{main/fs}
+    \include{main/knockoffs}
     \cleardoublepage
     \include{main/snb}
     \include{main/fsc}
     \include{main/sdp}
     \include{main/experiments}
+    \include{main/conclusion}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% TAIL: Bibliography, Appendix, CV
@@ -104,5 +105,4 @@ headsepline, % Uncomment to get a line under the header
     % Add your glossary here
     % Add your index here
     % Photographic credits (list of pictures&images that have been used with names of the person holding the copyright for them)
-
 \end{document}

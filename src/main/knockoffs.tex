@@ -1,0 +1,399 @@
+\chapter{The knockoffs filter framework}\label{ch:knockoffs}
+
+In 2015 Barber-Candès introduce the knockoffs framework and extend it later in 2018 to more general settings
+(allowing in particular to perform feature selection in the high dimension context).
+The goal is to control the false discovery rate as defined in~\ref{eq:fdr_def}, while maintaining a reasonable power.
+More formally, let $X \in \R^{n \times p}$ be a a feature matrix and $\yy \in \R^n$ the associated target vector.
+Suppose $\yy$ depends only on the subset of features $\cS \subseteq \fset$.
+Given some $\fdr$ target $\fdrtarget \in [0, 1]$, we wish to find a procedure such as, in average,
+the false discovery proportion is smaller that $\fdrtarget$, i.e. $\fdr \leq q$.
+To do so, the key idea is to construct for each original feature $X_j$, $j \in \fset$,
+a knockoff (that is to say, fake) feature $\tilde{X}_j$ which is known to be out of the model.
+Original features are then selected only if they prove to be more significant than their knockoff counterparts.
+
+Note $\Sigma = X^\top X$.
+
+To compare a feature and its knockoff several quantities will be computed by interchanging them.
+For this reason, we define in~\ref{def:swap} the $\swap$ operator.
+\begin{definition}\label{def:swap}
+    \text{($\swap$ operator)}
+    Given two matrices $A,\,B \in \R^{n \times p}$ of same size,
+    we define the $\swap$ operator on the concatenated matrix $\big[ A,\, B \big]$ as follows.
+    For a any subset of indices $S \subseteq \left\{ 1, \dots, p \right\}$,
+    $\big[ A,\, B \big]_{\swap(S)}$ is the transformed matrix where the columns $A_j$ and $B_j$ were swapped for all
+    $j \in S$.
+\end{definition}
+
+In the following sections, we are going to detail principal aspects of the construction of the knockoff features,
+the computation of statistics for both original and knockoff features,
+and the feature selection itself, based on those statistics.
+
+\section{Knockoffs construction}\label{sec:kc}
+
+In 2015, Barber-Candès introduced first the \textit{fixed}-X knockoffs variable selection procedure.
+It relies on the creation of fake features satisfying some correlation constraints with the original features.
+Unfortunately, it can only perform adequately when $n \geq 2p$,
+even though it can be partially extended to the cases where $n \geq p$.
+In 2018, Candès proposed an extension of the framework called \textit{model}-X knockoffs,
+in which fake features are sampled from a learned distribution.
+Despite the restriction of \textit{fixed}-X knockoffs, that method is still appealing as the construction of the
+knockoff variables is straightforward (but costly).
+On the other hand, \textit{model}-X knockoffs work in higher feature dimensions
+but need an estimation of the distribution that generated the data,
+which is a hard problem in general.
+We will focus on the construction of \textit{model}-X knockoffs as we are principally interested in the
+high dimensional setting.
+
+In this section, let $(\cX, \cY)$ be a pair of random variables,
+$\cX$ being composed of $p$ features,
+and $\cY$ the associated target in $\R$.
+We suppose that the feature matrix and the target vector $(X,\, \yy)$ are composed of samples from $(\cX,\, \cY)$.
+We wish to build knockoff features $\tX \in \R^{n \times p}$, and to do so we are going to sample from a
+random variable $\tcX$ built such that $\big[ \cX; \tcX \big]$
+follows the properties~\ref{itm:cond_swap} and~\ref{itm:cond_indep} defined thereafter.
+
+\subsection{General case}\label{subsec:general_case}
+
+\begin{definition}
+    \text{(model-$X$ knockoffs)}
+    Given random vector $\cX \in \R^p$ of features,
+    a random vector $\tcX \in \R^p$ is said to be model-$\cX$ knockoffs with respect to $\cY$
+    if it satisfies the two following properties:
+    \begin{enumerate}[label=\textbf{S.\arabic*},ref=S.\arabic*]
+        \item \label{itm:cond_swap} For any $S \subseteq \fset$,
+            $\big[ \cX; \tcX \big]^\top_{\swap(S)} \distreq \big[ \cX; \tcX \big]^\top$
+        \item \label{itm:cond_indep} $\tcX \independent \cY \mid \cX$
+    \end{enumerate}
+\end{definition}
+Intuitively, the condition~\ref{itm:cond_swap} ensures that a knockoff feature is sufficiently
+close to its associated original feature so that swapping them doesn't change the distribution of the
+concatenated random vector.
+The independence condition~\ref{itm:cond_indep} states that the knockoff features
+carry no additional information on $\cY$, given $\cX$.
+It is trivially satisfied if $\tX$ is built without exploiting $\yy$.
+However, constructing knockoffs meeting the first distribution equality is practically infeasible in general.
+\begin{remark}
+    Constructing the knockoffs feature matrix $\tX \in \R^{n \times p}$.
+    It must satisfy two conditions, namely:
+    \begin{align*}
+        &{\tX}^\top\tX = \Sigma,
+        \\
+        &X^\top\tX = \Sigma - \diag\{\bs\}
+        \text{ where } \bs \text{ is a non negative vector.}
+    \end{align*}
+    It ensures that $\tX$ has the same covariance as the original matrix $X$
+    and that the correlation between distinct original and knockoff variables is
+    the same as the correlation between the two originals.
+\end{remark}
+
+\subsection{Gaussian case}\label{subsec:gaussian_knockoffs}
+
+In the particular case where $\cX$ is multivariate gaussian, the exact distribution of $\tcX$ can be derived.
+\begin{proposition}
+    Suppose that $\cX \sim \cN(\bmu, \Sigma)$.
+    If $\tcX$ is a random variable such that
+    \begin{equation*}
+        \big[ \cX; \tcX \big] \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix}, \Omega\bigg)
+        ,\quad\text{where }\quad
+        \Omega = \begin{bmatrix}
+            \Sigma & \Sigma - \diag \bs\\
+            \Sigma - \diag \bs & \Sigma
+        \end{bmatrix}
+        \quad\text{for some }
+        \bs \in \R^p,
+    \end{equation*}
+    then $\big[\cX, \tcX \big]$ satisfies the $\swap$ property~\ref{itm:cond_swap},
+    provided that $\Omega$ is positive semidefinite (so that it is indeed a covariance matrix).
+\end{proposition}\label{prop:gaussian_knockoffs}
+In the proposition~\ref{prop:gaussian_knockoffs},
+$\bs \in \R^p$ can be any vector such that $\Omega \succeq \0$.
+We will come back later to the choice of $\bs$ which is actually crucial.
+For now, assume that $\bs$ satisfies this assumption.
+This result gives a way of constructing the knockoff features from $X$.
+Indeed, as $\big[ \cX; \tcX \big]$ is multivariate normal, we may compute the exact distribution of
+$\tcX \mid \cX$ with classical formulas~\cite{conditional_normal} as shown in~\ref{eq:conditional_gaussian_knockoffs}.
+\begin{equation}\label{eq:conditional_gaussian_knockoffs}
+    \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
+    ,\qquad\text{where}\quad
+    \begin{cases*}
+        \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
+        \Upsilon = \diag(\bs)\left( 2\mI_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+    \end{cases*}
+\end{equation}
+To put this into practice, one would compute the empirical mean
+$\hat{\bmu} \in \R^p$ and covariance $\hat{\Sigma} \in \R^{p \times p}$ of $\cX$
+using the observed feature matrix $X$.
+Then, each row of $\tX$ is sampled according to a gaussian distribution $\cN\left( \bupsilon, \Upsilon \right)$
+whose parameters are described in~\ref{eq:conditional_gaussian_knockoffs}.
+Note in particular that the construction process is random;
+if it is repeated, it may very well return different knockoffs, and thus different
+selected features.
+Because of this instability, several attempts~\cite{improve_stability_knockoffs} to fix it by
+aggregating several knockoff samples.
+
+Depending on the prior on the data and on the available computing power,
+several algorithms may be used to estimate the covariance matrix $\Sigma$.
+The empirical estimator is cheap but known to be unstable when $p > n$.
+Shrunk estimations like Ledoit-Wolf~\cite{ledoit_wolf} provide good results.
+\bigbreak
+The gaussian hypothesis is obviously rarely verified in practice but yields acceptable results even when
+$\cX$ is far from gaussian.
+It partly comes from the fact that, rather than constructing $\tcX$ to respect~\ref{itm:cond_swap},
+a weaker condition would be to enforce $\big[ \cX, \tcX \big]$ and $\big[ \cX, \tcX \big]_{\swap(S)}$ to have the
+same first two moments (mean and covariance).
+It turns out to be the case if $\tcX \mid \cX$ is constructed as described in~\ref{eq:conditional_gaussian_knockoffs}.
+In the remaining of this master thesis, we will restrain ourselves to the gaussian hypothesis.
+
+The first knockoff paper~\cite{fixed_x_knockoffs} introducing the \textit{fixed}-X knockoffs relied on similar correlation
+properties between the original and the knockoff features.
+It however imposed $p \leq n$ and fewer statistics would yield theoretical guarantees regarding the FDR control
+of the procedure.
+In the reminding, we will only consider \textit{model}-X knockoffs as we are interested in the high dimensional
+setting.
+Moreover, \textit{model}-X knockoffs tend to give higher power experimentally compared to their \textit{fixed}
+counterparts.
+
+Note that generating knockoffs requires an estimation of the distribution of $\cX$ only,
+and not $\cY \mid \cX$ as most methods would.
+It is particularly appealing because labeling data is often the most costly part,
+while acquiring samples $\xx \sim \cX$ is easier.
+Unlabeled samples are thus valuable.
+
+\section{Statistics computation}\label{sec:ksc}
+
+\subsection{General principle}\label{subsec:scg}
+
+Given the original feature matrix and the sampled knockoffs $X,\, \tX \in \R^{n \times p}$,
+statistics $w_j$ for all $j \in \fset$ are computed.
+Each $w_j$ represents how more significant the original feature $X_j$ is compared to $\tX_j$.
+These statistics must satisfy the \emph{flip-sign} technical condition~\ref{def:flip_sign}
+for the FDR control to carry out,
+but a wide variety of choices is possible as will be shown.
+\begin{definition}\label{def:flip_sign}
+\text{(flip-sign property)}
+A statistics function $\omega \colon \R^{n \times 2p} \times \R^n \to \R^p$
+is said to follow the flip-sign property if for any $S \subseteq \fset$ and any $j \in \fset$,
+\begin{equation*}
+    \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
+        -\omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{if $j \in S$.}\\
+        \omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{otherwise.}
+    \end{cases*}
+\end{equation*}
+\end{definition}
+This property is very natural,
+as it is simply asking the original and the knockoff features to play antisymmetric roles.
+
+\subsection{Statistics aggregation}\label{subsec:ksa}
+
+Constructing statistics satisfying the \emph{flip-sign} property~\ref{def:flip_sign} is actually straightforward
+as an elementary scheme in two steps leads to such statistics.
+The idea is to build statistics for each original and each knockoff feature, and then aggregate them.
+\begin{enumerate}
+    \item First construct statistics $[ \zz ; \tilde{\zz} ] = \zeta\big( \big[ X, \tX \big],\, \yy \big)$
+        with some function $\zeta \colon \R^{n \times 2p} \times \R^n \to \R^{2p}$ satisfying
+        \begin{equation}\label{eq:swap_cond}
+        [ \zz ; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big)
+        ,\quad
+        \forall S \subseteq \fset
+        \end{equation}
+        The statistics $z_j$ (resp. $\tilde{z}_j$) indicates how significant the original (resp.\ knockoff) feature $j$ is.
+    \item Then aggregate for each $j \in \fset$ the statistics of the original feature $z_j$ and the one of the corresponding
+        knockoff $\tilde{z}_j$ with an antisymmetric function $a_j \colon \R\times\R \to \R$.
+        That is, set $w_j = a_j(z_j, \tilde{z}_j)$.
+\end{enumerate}
+It is easy to show that such constructed statistics will satisfy the \emph{flip-sign} property~\ref{def:flip_sign}.
+
+Basically any antisymmetric function $a_j$ could work, but some choices experimentally lead to a better power.
+Here are a few examples of mappings:
+\begin{itemize}
+    \item $w_j = z_j - \tilde{z}_j$ (experimentally gives highest power in many cases)
+    \item $w_j = \max(z_j, \tilde{z}_j) \times \sign(z_j - \tilde{z}_j)$ (first proposed in 2015)
+    \item $w_j = \log\frac{z_j}{\tilde{z}_j}$
+\end{itemize}
+As for the function $\zeta$, it only needs to satisfy the \emph{swap} property~\ref{eq:swap_cond}.
+This condition may seem restrictive but a large number of choices are actually valid.
+
+\subsection{Examples}\label{subsec:sce}
+
+A few examples of statistics relying on the aggregation trick are presented in this subsection.
+
+In~\cite{fixed_x_knockoffs}, Barber-Candès suggest after empirical observations the use of the
+Lasso Signed Max (LSM) statistics defined as follows.
+\begin{equation}
+    z_j = \sup\{\lambda \mid \hat{\bbeta}_j(\lambda) \neq 0\}
+    ,\qquad\qquad
+    \hat{\bbeta}(\lambda) =
+    \underset{\bb}{\argmin}\;
+    \frac{1}{2}\big\lVert \yy - \big[ X, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
+\end{equation}
+The vector $\hat{\bbeta}(\lambda) \in \R^{2p}$ contains the coefficients of a Lasso model
+with penalty coefficient $\lambda > 0$.
+As mentioned in subsection~\ref{subsubsec:lasso},
+all the coefficients are null starting from $\lambda = +\infty$,
+and are likely to shift (and to grow in absolute value) as $\lambda \to 0$.
+It makes sense to use the first point where the coefficient $\beta_j$ is not null
+as a significance metric for each individual feature $j$.
+In addition, the LARS algorithms is able to compute that value pretty efficiently~\cite{lars_complexity}.
+
+Training a plain Lasso estimator.
+Once again, the LARS algorithm allows to cross-validate the Lasso efficiently.
+Experimentally, the Lasso gives remarkable results in terms of power.
+
+More generally, the coefficients in absolute value of any reasonable regressor
+(or classifier, depending on the task) constitute a judicious option of statistics.
+The fact that the \emph{flip-sign} property isn't restrictive makes the knockoff framework very powerful.
+Depending on the data, an adapted model can be trained be it logistic regression,
+SVMs, or random forests~\cite{random_forests}.
+When the model has hyper-parameters, those are typically tuned using cross-validation.
+This step is usually costly.
+
+\section{Selection thresholds}\label{sec:kfs}
+
+The selection itself requires the computation of a data-dependent threshold $\tau$
+conditioned by the target FDR $\fdrtarget \in \zoint$.%, as defined in~\ref{eq:knock_thres} and~\ref{eq:knockp_thres}.
+Finally, only the features $j$ whose statistics $w_j$ is above the threshold are selected.
+\begin{equation}
+    \hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}
+\end{equation}
+Depending on how restrictive the procedure ought to be, the threshold $\tau$ can be adapted.
+It leads to different guarantees regarding the control of the FDR\@.
+Barber-Candès establish two selection procedures,
+namely \emph{knockoff} and \emph{knockoff+}.
+They control the modified FDR (as defined below) and the FDR respectively.
+\begin{definition}\label{def:mfdr}
+Given an estimate $\hat{\cS}$ of $\cS$ and a desired target false discovery rate $q \in [0, 1]$,
+we define the modified $\fdr$ as follows:
+\begin{equation*}
+    \mfdr = \E{
+        \frac
+            {\abs{\left\{ j \mid j \in \hat{\cS} \setminus \cS \right\}}}
+            {\lvert\hat{\cS}\rvert + 1 / q}
+    }
+\end{equation*}
+\end{definition}
+As $0 \leq q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
+It means that controlling the $\mfdr$ is less restrictive than controlling the $\fdr$,
+as the $\fdr$ could potentially be arbitrarily larger than the $\mfdr$.
+But if the target threshold $q$ is not too small, and if many features are selected by the procedure,
+the modified version of the FDR is close enough to the actual $\fdr$.
+As will be shown later, being less restrictive by controlling only the $\mfdr$ can greatly improve the power
+of the selection.
+
+The only difference between the \emph{knockoff} and the \emph{knockoff+} procedures is the selection threshold $\tau$.
+\begin{definition}
+    (knockoff and knockoff+ thresholds)
+    Given the statistics $\ww \in \R^p$ computed from $X$ and $\tX$,
+    we define the knockoff and knockoff+ threshold respectively as follows:
+    \begin{align}
+        \tau &=
+        \min\left\{
+            t > 0 \mid \frac
+                { \abs{\left\{ j \mid w_j \leq -t \right\}} }
+                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+            \leq q
+        \right\}\label{eq:knock_thres}\\
+        \tau^+ &=
+        \min\left\{
+            t > 0 \mid \frac
+                { 1 + \abs{\left\{ j \mid w_j \leq -t \right\}} }
+                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+            \leq q
+        \right\}\label{eq:knockp_thres}
+    \end{align}
+\end{definition}
+They only differ by their numerator, where $\tau^+$ has an additional $+1$.
+The main result of Barber-Candès regarding the control of the $\mfdr$ and $\fdr$ is stated in~\ref{th:knockoffs}.
+\begin{theorem}\label{th:knockoffs}
+    (guarantees of the knockoff procedures)
+    Construct $\hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}$
+    and $\hat{\cS}^+ = \left\{ j \mid w_j \geq \tau^+ \right\}$.
+    These selections ensure the following FDR controls:
+    \begin{equation}
+        \mfdr\big[ \hat{\cS} \big] \leq q
+        ,\qquad
+        \fdr\big[ \hat{\cS}^+ \big] \leq q
+    \end{equation}
+\end{theorem}
+Even if only the \textit{knockoff+} method truly control the FDR,
+using the threshold $\tau$ improves the power and gives reasonable FDR,
+in the same way the BH procedure usually controls the FDR even when the tests are not independent.
+
+\section{Bottlenecks}\label{sec:kb}
+
+Despite the nice theoretical guarantees on the $\fdr$ control that the knockoff procedure proposes,
+two bottlenecks hurt its performances in the high dimensional setting.
+
+\subsection{SDP}\label{subsec:bot_sdp}
+
+In the gaussian setting,
+knockoff features are sampled according to the distribution~\ref{eq:conditional_gaussian_knockoffs}.
+The control guarantees hold for any $\bs \in \R^p$ such that the covariance matrix $\Omega$ is semidefinite positive.
+\begin{proposition}\label{prop:omega_psd}
+    Let $\Omega = \begin{bmatrix}
+        \Sigma & \Sigma - \diag \bs\\
+        \Sigma - \diag \bs & \Sigma
+    \end{bmatrix}$.
+    Then $\Omega \succeq \0_{p \times p}$ if and only if $2\Sigma \succeq \diag \bs \succeq \0$.
+\end{proposition}
+\begin{proof}
+    Note $D = \diag\bs$.
+    By computing the Schur complement~\cite{schur_complement}
+    $\Omega_{/\Sigma} = 2D - D\Sigma^{-1}D$,
+    $\Omega \succeq \0$ is equivalent to $\Omega_{/\Sigma} \succeq \0$.
+    Define $M$ and its Schur complements as follows
+    \begin{equation*}
+        M = \begin{bmatrix}
+            2D & D\\
+            D & \Sigma
+        \end{bmatrix}
+        ,\qquad\qquad
+        \begin{cases*}
+            M_{/2D} = \Sigma - \frac{1}{2}D\\
+            M_{/\Sigma} = 2D - D\Sigma^{-1}D
+        \end{cases*}
+    \end{equation*}
+    Finally, $\Omega_{/\Sigma} = M_{/\Sigma}$ is p.s.d.\ if and only if both $\Sigma - \frac{1}{2}D$ and $D$ are p.s.d.
+\end{proof}
+
+\subsection{Statistics computation}\label{subsec:bot_stats}
+
+and could take advantage of sparse naive Bayes to run faster.
+\bigbreak
+These two bottlenecks make the .
+The following chapters tackle these two issues by proposing fast statistics computation.
+From now, only binary classification problems will be considered, where the label $y$ takes values
+in $\left\{ \cC^+,\, \cC^- \right\}$.
+
+\section{Python implementation}\label{sec:python_implementation}
+
+Barber-Candès (along with other coauthor) provided a R and MATLAB implementation
+of the knockoff framework\footnote{
+    The R package page can be found at
+    \href{https://cran.r-project.org/web/packages/knockoff/index.html}{this address}.
+    Sources for both R and MATLAB are stored in this
+    \href{https://github.com/msesia/knockoff-filter}{GitHub repository}.
+}.
+To the best of our knowledge, no unified Python implementation
+The implementation follows deliberately the Scikit-Learn~\cite{sklearn} structure.
+It provides 3 main components,
+namely a knockoffs generator \code{KnockoffsGenerator},
+statistics computations utility functions,
+and a selector \code{BaseKnockoffsSelector}.
+\code{KnockoffsGenerator} and \code{BaseKnockoffsSelector} subclass \code{BaseEstimator} and \code{TransformerMixin}
+and \code{BaseEstimator} and \code{SelectorMixin} respectively.
+
+\begin{calgorithm}
+\begin{minted}[linenos]{python}
+selector = SimpleKnockoffsSelector(
+    GaussianXKnockoffs(),
+    z_to_w_statistics(estimator_statistics(estimator=LassoCV())),
+    alpha=0.2,
+)
+
+selector.fit(X, y)
+print(f'Selected features: {selector.mask_}')
+\end{minted}
+\caption{
+    Example of knockoffs usage
+}\label{code:python_knockoffs}
+\end{calgorithm}

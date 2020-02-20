@@ -1,6 +1,6 @@
 \chapter{Fast statistics computation}\label{ch:fsc}
 
-The computation of statistics is a key step in the knockoff selection process described in section~\ref{sec:knockoffs}.
+The computation of statistics is a key step in the knockoff selection process described in section~\ref{ch:knockoffs}.
 As it has been discussed, a large variety of statistics control the FDR,
 provided that the \textit{flip-sign} property~\ref{def:flip_sign} is satisfied.
 
@@ -16,7 +16,7 @@ Let $\tX \in \R^{n \times p}$ be sampled from that knockoff distribution.
 
 Experimentally, cross-validating a regressor (or classifier) against the data $\big[ X, \tX \big]$,
 keeping its coefficients in absolute value,
-and aggregating them as described in~\ref{subsubsec:ksa} yields excellent results.
+and aggregating them as described in~\ref{subsec:ksa} yields excellent results.
 Most classical regression models scale pleasantly as $p$ increases;
 $\cO(n \cdot p)$ for Lasso and logistic regression,
 $\cO(n \cdot p^2)$ for SVMs.
