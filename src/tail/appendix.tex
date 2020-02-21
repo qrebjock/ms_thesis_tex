@@ -182,3 +182,57 @@ Proofs and further details regarding these formulas can be found in~\cite{woodbu
     of the diagonal blocks gives the result.
     A similar factorization holds for the second identity.
 \end{proof}
+
+\chapter{Cython acceleration}\label{ch:cython_acceleration}
+\begin{calgorithm}
+\begin{minted}[linenos]{python}
+    import numpy as np
+    cimport cython
+    cimport numpy as np
+    from scipy.linalg.cython_blas cimport dsyr, dsymv, ddot
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.nonecheck(False)
+    cdef _full_rank(
+        int p, double[:, ::1] Sigma, int max_iterations, double lam, double mu, double tol
+    ):
+        cdef double[::1] s = np.zeros(p)
+        cdef double[:, ::1] A = np.linalg.inv(Sigma) / 2
+        cdef double[::1] temp = np.zeros(p)
+        cdef double[::1] A_entry = np.zeros(p)
+        cdef double q, r, c, z, delta, kappa
+        cdef char* up = 'U'
+        cdef int inc = 1
+        cdef double alpha = 1, beta = 0
+
+        for i in range(max_iterations):
+            for j in range(p):
+                dsymv(up, &p, &alpha, &A[0, 0], &p, &Sigma[j, 0], &inc, &beta, &temp[0], &inc)
+                q = (ddot(&p, &temp[0], &inc, &Sigma[j, 0], &inc)
+                    - 2 * temp[j] * Sigma[j, j] + A[j, j] * Sigma[j, j] * Sigma[j, j])
+                r = (temp[j] - Sigma[j, j] * A[j, j]) ** 2 / A[j, j]
+                c = 4 * (q - r)
+                z = 2 * Sigma[j, j] - lam - c
+                if z < 0:
+                    z = 0
+
+                delta = s[j] - z
+                kappa = -delta / (1 + delta * A[j, j])
+                for k in range(p):
+                    if k > j:
+                        A_entry[k] = A[k, j]
+                    else:
+                        A_entry[k] = A[j, k]
+                dsyr(up, &p, &kappa, &A_entry[0], &inc, &A[0, 0], &p)
+                s[j] = z
+            lam = mu * lam
+        return s
+\end{minted}
+\caption{
+    Full coordinate ascent implementation with Cython and BLAS
+}\label{code:full_rank_cython}
+\end{calgorithm}
+Because of the overhead of Python, we opted to implement SDP solvers in Cython,
+using SciPy's BLAS interface for Cython.
+Code~\ref{code:full_rank_cython} is an example of implementation of Algorithm~\ref{alg:coordinate_ascent_log_barrier}.

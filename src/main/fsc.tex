@@ -22,9 +22,13 @@ $\cO(n \cdot p)$ for Lasso and logistic regression,
 $\cO(n \cdot p^2)$ for SVMs.
 But when the number of features is several thousands or more,
 
+\section{Multi-stage procedures}\label{sec:multi_stage}
+
+A natural way to address the high number of features is to split the selection into several steps.
+If $p$ is high,
+you may want to reduce the number of features by cutting a large proportion with a cheap and fast procedure first,
+and use more sophisticated methods afterwards on the remaining set of features.
+Multi-stage procedure~\cite{multi_stage_fdr}
 
 \section{Fast statistics}\label{sec:a}
 
-\section{Multi-stage procedures}\label{sec:multi_stage}
-
-Multi-stage procedure~\cite{multi_stage_fdr}

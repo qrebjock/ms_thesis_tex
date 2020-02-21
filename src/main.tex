@@ -57,13 +57,14 @@ headsepline, % Uncomment to get a line under the header
     \frontmatter
     \input{head/titlepage.tex}
     \setcounter{page}{0}
-    \include{head/acknowledgements}
     \include{head/abstract}
-    \include{head/notations}
+    \include{head/acknowledgements}
 
     \cleardoublepage
     \pdfbookmark{\contentsname}{toc}
     \tableofcontents
+
+    \include{head/notations}
 
     % % Following content is OPTIONAL (List of figures + tables)
     % \cleardoublepage

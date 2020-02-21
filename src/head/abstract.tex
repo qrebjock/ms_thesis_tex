@@ -1,6 +1,26 @@
 \cleardoublepage
-\chapter*{Abstract}
+%\chapter*{Abstract}
 \markboth{Abstract}{Abstract}
-\addcontentsline{toc}{chapter}{Abstract} % adds an entry to the table of contents
 
-\abstract
+\null\vspace{5cm}
+\phantomsection
+\begin{abstract}
+\addcontentsline{toc}{chapter}{Abstract} % adds an entry to the table of contents
+\centering
+\begin{minipage}{\dimexpr\paperwidth-10cm}
+      Feature selection is an active area of research in machine learning
+      In the past decades
+      In this high-dimensional setting,
+      that is when the number of features is larger than the number of samples,
+      the problem of feature selection becomes particularly challenging.
+
+      Recently, Barber-Candès introduced the knockoffs framework to control the false discovery rate
+      when performing feature selection.
+      The key idea is to build a knockoff feature for each original feature
+
+      In this master thesis, we focus on the high-dimensional feature selection setting.
+      Several bottleneck of the knockoff procedure are addressed.
+      \vspace{2cm}
+      \textbf{Keywords:} Feature selection, false discovery rate control, knockoff filter, high dimension
+\end{minipage}
+\end{abstract}

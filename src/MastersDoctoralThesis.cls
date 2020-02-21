@@ -262,7 +262,6 @@
 %----------------------------------------------------------------------------------------
 %	PENALTIES
 %----------------------------------------------------------------------------------------
-
 \doublehyphendemerits=10000 % No consecutive line hyphens
 \brokenpenalty=10000 % No broken words across columns/pages
 \widowpenalty=9999 % Almost no widows at bottom of page
@@ -516,14 +515,16 @@ KOMA-script documentation for details.}]{fancyhdr}
 
 \ifbool{hyperrefsupport}{% If the nohyperref class option has not been specified
 \AtEndPreamble{\RequirePackage{hyperref}
+\definecolor{mydarkblue}{rgb}{0,0.08,0.45}
 \hypersetup{pdfpagemode={UseOutlines},
 bookmarksopen=true,
 bookmarksopenlevel=0,
 hypertexnames=false,
 colorlinks=true,% Set to false to disable coloring links
-citecolor=magenta,% The color of citations
-linkcolor=red,% The color of references to document elements (sections, figures, etc)
-urlcolor=mdtRed,% The color of hyperlinks (URLs)
+citecolor=mydarkblue,%magenta,% The color of citations
+linkcolor=mydarkblue,%red,% The color of references to document elements (sections, figures, etc)
+urlcolor=mydarkblue,%mdtRed,% The color of hyperlinks (URLs)
+filecolor=mydarkblue,
 pdfstartview={FitV},
 unicode,
 breaklinks=true,

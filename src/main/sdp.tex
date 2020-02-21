@@ -421,7 +421,7 @@ in the term $(**)$.
 It can be reduced to $\cO\left( k^2 \right)$ using Sherman–Morrison rank-1 updates or,
 for a better numerical stability,
 $LDL^\top$ Cholesky rank-1 updates.
-Note $A$ the matrix
+To see this, note $A$ the matrix
 \begin{equation*}
     A = I_k + V^\top F^{-1} V
 \end{equation*}
@@ -451,7 +451,9 @@ so its inverse can simply be computed with a rank-1 update of the one of $A$.
 This scheme is summarized in Algorithm~\ref{alg:low_rank_coordinate_ascent}.
 It uses at most $\cO\left( p \cdot k \right)$ memory ($F$ never has to be fully computed as it's a diagonal)
 and the time complexity is $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$, as stated above.
-However, numerical instabilities led us to perform it in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
+However, numerical instabilities led us to perform some experiments in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
+Figure~\ref{fig:low_rank_time} shows the convergence time for Algorithm~\ref{alg:low_rank_coordinate_ascent} as
+a function of $p$ and $k$.
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
