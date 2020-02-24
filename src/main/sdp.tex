@@ -2,8 +2,8 @@
 
 As shown in Chapter~\ref{ch:fs}, in the case of gaussian knockoffs
 $\tX$ can be sampled from a normal distribution $\cN\left( \bupsilon,\, \Upsilon \right)$ whose parameters
-$\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs}.
-\begin{equation}\label{eq:conditional_gaussian_knockoffs}
+$\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs2}.
+\begin{equation}\label{eq:conditional_gaussian_knockoffs2}
     \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
     ,\qquad\text{where}\quad
     \begin{cases*}
@@ -56,7 +56,7 @@ the minimum eigenvalue of $\cove$ is likely to be very small,
 unless $\cove$ has a substantially special structure.
 Let us analyze briefly the covariance of $\big[ \cX; \tcX \big]$
 to understand why it is unprofitable for the selection procedure.
-If $\tcX$ is built according to~\ref{eq:conditional_gaussian_knockoffs}, it satisfies
+If $\tcX$ is built according to~\ref{eq:conditional_gaussian_knockoffs2}, it satisfies
 \begin{equation*}
     \begin{cases}
         \cov(\tcX_j,\, \tcX_{j'}) = \cov(\cX_j,\, \cX_{j'}) \text{ for all } j,\,j'\\
@@ -450,13 +450,6 @@ so its inverse can simply be computed with a rank-1 update of the one of $A$.
         \Until{stopping criteria}
     \end{algorithmic}
 \end{algorithm}
-
-This scheme is summarized in Algorithm~\ref{alg:low_rank_coordinate_ascent}.
-It uses at most $\cO\left( p \cdot k \right)$ memory ($F$ never has to be fully computed as it's a diagonal)
-and the time complexity is $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$, as stated above.
-However, numerical instabilities led us to perform some experiments in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
-Figure~\ref{fig:low_rank_time} shows the convergence time for Algorithm~\ref{alg:low_rank_coordinate_ascent} as
-a function of $p$ and $k$.
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
@@ -470,6 +463,13 @@ a function of $p$ and $k$.
     }
     \label{fig:low_rank_times}
 \end{figure}
+
+This scheme is summarized in Algorithm~\ref{alg:low_rank_coordinate_ascent}.
+It uses at most $\cO\left( p \cdot k \right)$ memory ($F$ never has to be fully computed as it's a diagonal)
+and the time complexity is $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$, as stated above.
+However, numerical instabilities led us to perform some experiments in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
+Figure~\ref{fig:low_rank_times} shows the convergence time for Algorithm~\ref{alg:low_rank_coordinate_ascent} as
+a function of $p$ and $k$.
 
 \subsection{Efficient low-rank sampling}\label{subsec:low_rank_sampling}
 

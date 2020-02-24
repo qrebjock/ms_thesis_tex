@@ -3,7 +3,8 @@
 \markboth{Introduction}{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-Feature selection
+Feature selection is an active area of research in statistics and machine learning aiming at
+making models more interpretable by identifying most relevant covariates explaining an observed phenomenon.
 In the past two decades, acquiring data has become
 Datasets end up with a number of features of several dozens of thousands.
 Often, it is also easier to measure features than to label the sample with the right category.
@@ -18,3 +19,20 @@ false discovery rate,
 and the knockoff framework developed by Barber-Candès.
 Chapter 2 introduces a sparse version of naive Bayes that scales linearly in the number of features against which
 it is trained.
+
+Feature selection is an active area of research in machine learning whose primary goal is to make models
+more interpretable by keeping most relevant covariates.
+Often, one is interested in selecting as many true positive features as possible
+(that is, maximizing true discoveries),
+while maintaining the false discovery rate under some threshold.
+In the past decades
+In this high-dimensional setting,
+that is when the number of features is larger than the number of samples,
+the problem of feature selection becomes particularly challenging.
+
+Recently, Barber-Candès introduced the knockoffs framework to control the false discovery rate
+when performing feature selection.
+The key idea is to build a knockoff feature for each original feature
+
+In this master thesis, we focus on the high-dimensional feature selection setting.
+Several bottleneck of the knockoff procedure are addressed.

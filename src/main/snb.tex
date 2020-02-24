@@ -8,7 +8,7 @@ The time complexity to train a model is asymptotically $\cO\left( n \cdot p \rig
 where $n$ and $p$ are the number of samples and the number of features respectively.
 Another appealing propriety is that naive Bayes can be trained in an online fashion,
 as new data points come in a sequential order.
-It can be particularly helpful if the dataset doesn't fit in memory.
+This attribute can be particularly helpful if the dataset doesn't fit in memory.
 Furthermore, distributed implementations could even be considered in order to speed up the learning process.
 
 In this chapter, classical naive Bayes along with a few notations are briefly introduced.
@@ -47,19 +47,20 @@ the denominator $\Pr(\cX = \xx)$ does not depend on the class $\cC_\pm$.
 It is therefore not required to evaluate it in order to perform the inference described in~\ref{eq:nb_inference}.
 Thus, we only need to estimate the probabilities $\Pr(\cC_\pm)$ and $\Pr(\xx \mid \cC_\pm)$.
 The former are simply data averages, i.e.\ the frequencies of the positive and negative classes in the observed data.
-As for the latter probabilities $\Pr\left( \xx \mid \cC_\pm \right) = \prod_{j = 1}^p \Pr(x_j \mid \cC_\pm)$,
+As for the latter probabilities
+$\Pr\left( \cX = \xx \mid \cC_\pm \right) = \prod_{j = 1}^p \Pr(\cX_j = x_j \mid \cC_\pm)$,
 they can be modeled by a plethora of distribution families, depending on the prior knowledge we have on the data.
 The distribution is typically parametrized by some vector $\btheta \in \R^m$.
-The probabilities are usually computed by maximizing the likelihood $\cL$,
-or equivalently the log-likelihood $\lglh = \log\cL$, of the observed data.
+which allows the probabilities to be computed by maximizing the likelihood $\cL$ of the observed data.
+Equivalently we may also maximize the log-likelihood $\lglh = \log\cL$.
 \begin{equation*}
-    \lglh\left( \btheta \right) = \sum_{i = 1}^n \Pr\left( \xx_i \mid y_i \,; \btheta \right)
+    \lglh\left( \btheta \right) = \sum_{i = 1}^n \Pr\left( \cX = \xx_i \mid y_i \,; \btheta \right)
 \end{equation*}
-We present now 3 meaningful cases, where the prior distributions of $\Pr(\xx \mid \cC_\pm)$ are either
+We present now 3 meaningful cases, where the prior distributions of $\cX \mid \cC_\pm$ are either
 gaussian, bernoulli or multinomial.
-Let $\cI_\pm = \left\{ i \in \pset \mid y_i = \cC_\pm \right\}$ be the sets containing the
+Let $\cI_\pm = \big\{ i \in \pset \mid y_i = \cC_\pm \big\}$ be the sets containing the
 indexes of the positive and negative data points.
-We also note for each class $\cC_\pm$ their cardinalities and empirical sums respectively, as follows:
+We also note for each class $\cC_\pm$ its cardinality and empirical sum respectively, as follows:
 \begin{equation*}
     n^\pm = | \cI_\pm |,
     \qquad\qquad
@@ -68,16 +69,16 @@ We also note for each class $\cC_\pm$ their cardinalities and empirical sums res
 
 \subsection{Gaussian naive Bayes}\label{subsec:gnb}
 
-In this case the observed data conditioned on its label is modeled by the gaussian distribution
-$\cN( \bmu^\pm, \Sigma^\pm )$.
-It is the most common configuration because it can account for continuous data and the normal distribution constitures
+In this case the observed data conditioned on its label is modeled by a gaussian distribution
+$\cN( \bmu^\pm,\, \Sigma^\pm )$.
+It is the most common configuration because it can account for continuous data and the normal distribution constitutes
 a decent prior in many cases by virtue of its high entropy.
 Note that the covariances $\Sigma^\pm \in \R^{p \times p}$
 are diagonal as a result of the independence assumption that we made.
 \begin{equation*}
-    \Pr\left( \xx \mid C_\pm \right) =
+    \Pr\left( \cX = \xx \mid C_\pm \right) =
     \frac{1}{\sqrt{(2\pi)^p\det(\Sigma_\pm)}}
-    \exp\left( -\frac{1}{2}(\xx - \bmu_\pm)^\top\Sigma^{-1}(\xx - \bmu_\pm) \right)
+    \exp\Big( -\frac{1}{2}(\xx - \bmu_\pm)^\top\Sigma^{-1}(\xx - \bmu_\pm) \Big)
 \end{equation*}
 By denoting $\sigma_j = \Sigma_{j j}$, the log-likelihood can be written
 \begin{equation*}
@@ -108,19 +109,19 @@ Even if $\lglh_g$ is not concave, it maximizer admits a closed-form solution
 The Bernoulli distribution assumes that the design matrix is binary,
 that is $X \in \zoset^{n \times p}$.
 Even though this situation isn't very prevalent in practice, it has a simple and elegant solution.
-In order to model the conditional probabilities, we may assume the existence of
-$\btheta^+,\, \btheta^- \in \left( 0, 1 \right)^p$
-such that for any data point $\xx \in \R^p$,
+More formally, we assume the existence of
+$\btheta^+,\, \btheta^- \in \left( 0,\, 1 \right)^p$
+such that for any data point $\xx \in \R^p$ the conditional probabilities are given by
 \begin{equation*}
-    \Pr\left( x_j \mid \cC_\pm \right) = (\theta^\pm_j)^{x_j} \cdot (1 - \theta^\pm_j)^{1 - x_j}
+    \Pr\left( \cX_j = x_j \mid \cC_\pm \right) = (\theta^\pm_j)^{x_j} \cdot (1 - \theta^\pm_j)^{1 - x_j}
 \end{equation*}
-It yields that $\log \Pr\left( \xx \mid \cC_\pm \right) =
+It yields that $\log \Pr\left( \cX = \xx \mid \cC_\pm \right) =
 \xx^\top\log\btheta^\pm + (\1 - \xx)^\top\log\left( \1 - \btheta^\pm \right)$
 and finally
 \begin{align}\label{eq:bernoulli_snb_ll}
     \lglh_b\left( \btheta^+,\, \btheta^- \right)
-    &= \sum_{i \in \cI^+} \log \Pr\left( \xx_i \mid \cC_+ \right)
-        + \sum_{i \in \cI^-} \log \Pr\left( \xx_i \mid \cC_- \right)\nonumber\\
+    &= \sum_{i \in \cI^+} \log \Pr\left( \cX = \xx_i \mid \cC_+ \right)
+        + \sum_{i \in \cI^-} \log \Pr\left( \cX = \xx_i \mid \cC_- \right)\nonumber\\
     \begin{split}
         &= \ff_+^\top\log\btheta^+ + (n_+\1 - \ff_+)^\top\log\left( \1 - \btheta^+ \right)\\
         &\qquad+ \ff_-^\top\log\btheta^- + (n_-\1 - \ff_-)^\top\log\left( \1 - \btheta^- \right)
@@ -140,7 +141,7 @@ Finally, we find that
 Multinomial naive Bayes generalizes the Bernoulli version
 as it supposes that $X \in \N^{n \times p}$ is generated by the following underlying distribution
 \begin{equation}\label{eq:multinomial_pr}
-    \Pr\left( \xx \mid \cC_\pm \right) =
+    \Pr\left( \cX = \xx \mid \cC_\pm \right) =
         \frac{\big( \sum_{j = 1}^p x_j \big)!}
             {\prod_{j = 1}^p x_j!} \cdot \prod_{j = 1}^p (\theta^\pm_j)^{x_j}
 \end{equation}
@@ -153,12 +154,12 @@ Hence, it is not as restrictive as it may appear at first sight,
 as it is applicable to a large number of datasets.
 The log probability is given by
 \begin{equation*}
-    \log\Pr\left(\xx \mid \cC_\pm\right) =
+    \log\Pr\left( \cX = \xx \mid \cC_\pm \right) =
         \xx^\top\log\btheta_\pm + \log\frac{\big(\sum_{j = 1}^p x_j\big)!}{\prod_{j = 1}^p x_j!}
 \end{equation*}
 and the log-likelihood reduces to (after removing the constant terms)
 \begin{equation}\label{eq:multinomial_snb_ll}
-    \lglh_m\left(\btheta^+,\, \btheta^-\right) = \ff_+^\top\log\btheta^+ + \ff_-^\top\log\btheta^-
+    \lglh_m\left( \btheta^+,\, \btheta^- \right) = \ff_+^\top\log\btheta^+ + \ff_-^\top\log\btheta^-
 \end{equation}
 which is again decomposable across features.
 It turns out that the optimums are
@@ -198,25 +199,25 @@ and the multinomial case respectively, we have
         \ww_m = \log\btheta^+ - \log\btheta^-
     \end{cases*}
 \end{equation*}
-The figure~\ref{fig:log_reg_nb_comparison} compares the decision boundary of logistic regression to the one
+Figure~\ref{fig:log_reg_nb_comparison} compares the decision boundary of logistic regression to the one
 of gaussian naive Bayes.
 \begin{figure}
     \centering
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[width=0.75\linewidth]{figures/log_reg_classification.pdf}
+        \includegraphics[width=0.9\linewidth]{figures/log_reg_classification.pdf}
         \label{fig:log_reg_classification}
     \end{subfigure}%
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[width=0.75\linewidth]{figures/nb_classification.pdf}
+        \includegraphics[width=0.9\linewidth]{figures/nb_classification.pdf}
         \label{fig:nb_classification}
     \end{subfigure}
     \caption{
         Illustration of the decision boundary for the logistic regression (left)
         and gaussian naive Bayes (right) for binary classification.
         For logistic regression, the separation is an hyperplane.
-        For gaussian naive Bayes, the separation has a dependency on $x \odot x$ and can be non-linear.
+        For gaussian naive Bayes, the separation has a dependency on $\xx \odot \xx$ and can be non-linear.
         Both bernoulli and multinomial naive Bayes would have a linear separation.
     }
     \label{fig:log_reg_nb_comparison}
@@ -227,7 +228,7 @@ of gaussian naive Bayes.
 A sparse version of naive Bayes was introduced in 2019~\cite{sparse_naive_bayes}.
 They add a sparsity constraint in the Bernoulli and the multinomial optimization problems portrayed above.
 It imposes the weight vector $\ww$ to have a number of non-zero entries under a certain threshold $k \in \N$.
-That property is similar to the one of the Lasso presented in~\ref{subsubsec:lasso}.
+That property is similar to the one of the Lasso presented in Section~\ref{subsubsec:lasso}.
 But the sparsity in sparse naive Bayes (SNB) is controlled by an integer $k$ which is
 the exact sparsity level desired on the weight vector,
 while the Lasso relies on a continuous penalty coefficient $\lambda \in \R$.
@@ -252,32 +253,30 @@ Naturally, imposing the constraint $\norm{\btheta^+ - \btheta^-}_0 \leq k$ in th
 will yield a weight vector $\ww$ with the desired sparsity.
 The optimization problems for Bernoulli and multinomial SNB
 (shortened BSNB and MSNB respectively) can be phrased as follows:
+
 \begin{equation}\label{eq:bsnb}\tag{BSNB}
     \begin{aligned}
-        & \underset{\btheta^+,\, \btheta^-}{\text{maximize}}
-        & & \lglh_\text{b}\left( \btheta^+,\, \btheta^- \right)
-            \begin{split}
-                &&&= \ff_+^\top\log\btheta^+ + (n_+\1 - \ff_+)^\top\log\left( \1 - \btheta^+ \right)\\
-                &&&\qquad+ \ff_-^\top\log\btheta^- + (n_-\1 - \ff_-)^\top\log\left( \1 - \btheta^- \right)
-            \end{split}\\
-        & \text{subject to}
-        & & \norm{\btheta^+ - \btheta^-}_0 \leq k.
+    & \underset{\btheta^+,\, \btheta^-}{\text{maximize}}
+    \quad&&\lglh_\text{b}\left( \btheta^+,\, \btheta^- \right)
+    = \ff_+^\top\log\btheta^+ + (n_+\1 - \ff_+)^\top\log\left( \1 - \btheta^+ \right)\\
+    & && \qquad\qquad\qquad\qquad + \ff_-^\top\log\btheta^- + (n_-\1 - \ff_-)^\top\log\left( \1 - \btheta^- \right)\\
+    & \text{subject to}
+    &&\norm{\btheta^+ - \btheta^-}_0 \leq k.
     \end{aligned}
 \end{equation}
+\vspace{1cm}
 \begin{equation}\label{eq:msnb}\tag{MSNB}
-    \begin{aligned}
-        & \underset{\btheta^+,\, \btheta^-}{\text{maximize}}
-        & & \lglh_\text{m}\left( \btheta^+,\, \btheta^- \right) = \ff_+^\top\log\btheta^+ + \ff_-^\top\log\btheta^-\\
-        & \text{subject to}
-        & & \norm{\btheta^+ - \btheta^-}_0 \leq k\\
-        & \text{ and }
-        & & \1^\top\btheta^+ = \1^\top\btheta^- = 1.
-    \end{aligned}
+\begin{aligned}
+    & \underset{\btheta^+,\, \btheta^-}{\text{maximize}}
+    & & \lglh_\text{m}\left( \btheta^+,\, \btheta^- \right) = \ff_+^\top\log\btheta^+ + \ff_-^\top\log\btheta^-\\
+    & \text{subject to}
+    & & \norm{\btheta^+ - \btheta^-}_0 \leq k
+    \quad\text{and}\quad \1^\top\btheta^+ = \1^\top\btheta^- = 1.
+\end{aligned}
 \end{equation}
-
 \subsection{Main results and resolution}\label{subsec:snb_th}
 
-Surprisingly and despite the combinatorial constraints,
+Surprisingly, despite the combinatorial constraints
 these optimizations problems can be (approximately) solved very efficiently,
 with an additional minor cost compared to vanilla naive Bayes.
 
@@ -295,12 +294,13 @@ an optimal solution can be computed in closed-form as shown in Theorem~\ref{th:b
                 &\qquad + \ff^- \odot \log \frac{\ff^-}{n^-} + (n^-\1 - \ff^-) \odot \log (\1 - \frac{\ff^-}{n^-})
         \end{split}
     \end{align*}
-    Let $\cI$ be the set of $p - k$ smallest elements of $\uu - \mt$, and let
+    Let $\cI$ be the set of $p - k$ smallest elements of $\uu - \mt$.
+    The optimal $\btheta^-,\, \btheta^+$ are given by
     \begin{equation*}
-        {\theta^+_\star}_j = {\theta^-_\star}_j = \frac{1}{n}(f_j^+ + f_j^-)
+        {\theta^-_j}^\star = {\theta^+_j}^\star = \frac{1}{n}(f_j^+ + f_j^-)
         \;\forall j \in \cI
         ,\qquad
-        {\theta^\pm_\star}_j = \frac{f^\pm_j}{n^\pm}
+        {\theta^\pm_j}^\star = \frac{f^\pm_j}{n^\pm}
         \;\forall j \notin \cI
     \end{equation*}
 \end{theorem}
@@ -332,10 +332,10 @@ stated in Theorem~\ref{th:msnb}.
     $\hh(\alpha^\star)$, and $B_\pm = \sum_{j \notin \cI} f_i^\pm$.
     A primal point can be reconstructed as follows:
     \begin{equation*}
-        {\theta^+_\star}_j = {\theta^-_\star}_j = \frac{f_j^+ + f_j^-}{\1^\top(\ff^+ + \ff^-)}
+        {\theta^+_j}^\star = {\theta^-_j}^\star = \frac{f_j^+ + f_j^-}{\1^\top(\ff^+ + \ff^-)}
         \;\forall j \in \cI
         ,\qquad
-        {\theta^\pm_\star}_j = \frac{B_+ + B_-}{B_\pm}\frac{f^\pm_j}{\1^\top(\ff^+ + \ff^-)}
+        {\theta^\pm_j}^\star = \frac{B_+ + B_-}{B_\pm}\frac{f^\pm_j}{\1^\top(\ff^+ + \ff^-)}
         \;\forall j \notin \cI
     \end{equation*}
     Furthermore, it holds that $\psi(k - 4) \leq \phi(k) \leq \psi(k) \leq \phi(k + 4)$,

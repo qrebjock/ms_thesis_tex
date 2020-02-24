@@ -184,6 +184,9 @@ Proofs and further details regarding these formulas can be found in~\cite{woodbu
 \end{proof}
 
 \chapter{Cython acceleration}\label{ch:cython_acceleration}
+Because of the overhead of Python, we opted to implement SDP solvers in Cython~\cite{cython},
+using SciPy's BLAS and LAPACK interfaces for Cython.
+Code~\ref{code:full_rank_cython} is an example of implementation of Algorithm~\ref{alg:coordinate_ascent_log_barrier}.
 \begin{calgorithm}
 \begin{minted}[linenos]{python}
     import numpy as np
@@ -201,10 +204,9 @@ Proofs and further details regarding these formulas can be found in~\cite{woodbu
         cdef double[:, ::1] A = np.linalg.inv(Sigma) / 2
         cdef double[::1] temp = np.zeros(p)
         cdef double[::1] A_entry = np.zeros(p)
-        cdef double q, r, c, z, delta, kappa
+        cdef double q, r, c, z, delta, kappa, alpha = 1, beta = 0
         cdef char* up = 'U'
         cdef int inc = 1
-        cdef double alpha = 1, beta = 0
 
         for i in range(max_iterations):
             for j in range(p):
@@ -230,9 +232,6 @@ Proofs and further details regarding these formulas can be found in~\cite{woodbu
         return s
 \end{minted}
 \caption{
-    Full coordinate ascent implementation with Cython and BLAS
+    Full coordinate ascent implementation with Cython, BLAS and LAPACK
 }\label{code:full_rank_cython}
 \end{calgorithm}
-Because of the overhead of Python, we opted to implement SDP solvers in Cython,
-using SciPy's BLAS interface for Cython.
-Code~\ref{code:full_rank_cython} is an example of implementation of Algorithm~\ref{alg:coordinate_ascent_log_barrier}.

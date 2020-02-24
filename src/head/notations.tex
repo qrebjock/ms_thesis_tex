@@ -6,11 +6,12 @@
 \begin{itemize}
     \item $\N$ denotes the set of natural integers and $\R$ the field of real numbers.
     \item Vectors are written in bold letters, e.g. $\xx,\, \yy \in \R^p$.
-    \item $\0$ and $\1$ are the vectors whose all entries are $0$ and $1$ respectively,
+    \item $\0$ and $\1$ are vectors whose all entries are $0$ and $1$ respectively,
         and whose sizes are inferred by the context.
     \item For a vector $\vv$, we note $\norm{\vv}_0$ the number of non-zero entries of $\vv$ (that is, its cardinality).
     \item Matrices are written in capital letters, e.g. $X \in \R^{n \times p}$.
-    \item We may cast any vector $\xx \in \R^p$ to a column matrix $x \in \R^{p \times 1}$ with the same entry values.
+    \item Vectors $\xx \in \R^p$ are by default considered to be columns matrices in
+        $\R^{p \times 1}$ with the same size and entry values.
     \item We note $\odot$ the Hadamard (element-wise) product between two vectors or matrices.
     \item Given two matrices $A$ and $B$, we note $\big[ A, B \big]$ and $\big[ A; B \big]$ their horizontal and
         vertical concatenation respectively (if dimensions match).
@@ -39,9 +40,9 @@
             4
         \end{bmatrix}
     \end{equation*}
-    \item The sets of $n \times n$ symmetric matrices,
+    \item The sets of $n \times n$ symmetric,
         symmetric positive semidefinite,
-        and symmetric positive definite
+        and symmetric positive definite matrices
         are denoted by $S^n$, $S^n_+$ and $S^n_{++}$ respectively.
     \item Functions $\R \to \R$ applied to vectors or matrices are implicitly performed element-wise,
         unless otherwise specified.

@@ -24,14 +24,16 @@ Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond 
 one may be interested in finding on which subset $\cS$ of features $\cP_{\cY \mid \cX}$ depends.
 Such a subset is not necessarily unique
 \begin{wrapfigure}{l}{0.5\textwidth}
-    \includegraphics[width=1\linewidth]{figures/fs_subset_not_unique.pdf}
+    \includegraphics[width=0.95\linewidth]{figures/fs_subset_not_unique.pdf}
     \caption{
         Illustration of the non-uniqueness of the Markov blanket.
-        Here $\cX_1 \sim \cN\left( 0,\, 1 \right)$,
-        $\cX_2 = \cX_1^2$,
-        and $\cY$ is $\cC_+$ if $\abs{\cX_1} \geq \frac{1}{2}$,
+        Here $\cX_1 \sim \cN\left( 0,\, 1 \right)$
+        and $\cX_2 \sim \cN\left( 0,\, 1 \right)$ are independent,
+        $\cZ = \cX_1^2 + \cX_2^2$.
+        $\cY$ is $\cC_+$ if $\cZ \geq \frac{1}{2}$,
         $\cC_-$ otherwise.
-        Both $\cX_1$ and $\cX_2$ alone are enough to predict $\cY$.
+        The target $\cY$ can be predicted directly from both the pair $\left( \cX_1,\, \cX_2 \right)$
+        or the distance to origin $\cZ$ alone.
     }
     \label{fig:fs_subset_not_unique}
 \end{wrapfigure}
@@ -233,17 +235,17 @@ c(p) = \sum_{j = 1}^p \frac{1}{j}
 ,\qquad
 \fdr \leq \frac{m_0}{p}\fdrtarget
 \end{equation}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=1.\textwidth]{figures/bhy.pdf}
     \caption{
-    Illustration of the BH and the BY procedures.
-    They are geometrically equivalent to drawing a line of slope $\beta$ going through the origin,
-    identifying the last $p$-value under the line, and keeping the features on the left of the intersection point.
-    For BH, $\beta = \frac{\fdrtarget}{p}$ (in blue),
-    while for BY, $\beta = \frac{\fdrtarget}{p \cdot c(p)}$ (in cyan).
-    In this toy example, $\fdrtarget = 0.5$, and it shows that BY is way more conservative than BH.
+        Illustration of the BH and the BY procedures.
+        Once the $p$-values are ordered,
+        they are geometrically equivalent to drawing a line of slope $\beta$ going through the origin,
+        identifying the last $p$-value under the line, and keeping features on its left.
+        For BH, $\beta = \frac{\fdrtarget}{p}$ (in blue),
+        while for BY, $\beta = \frac{\fdrtarget}{p \cdot c(p)}$ (in brown).
+        In this toy example, $\fdrtarget = 0.5$, and it shows that BY is way more conservative than BH.
     }
     \label{fig:bhy}
 \end{figure}
