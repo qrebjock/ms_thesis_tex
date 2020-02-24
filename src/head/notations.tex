@@ -4,17 +4,20 @@
 \addcontentsline{toc}{chapter}{Notations}
 
 \begin{itemize}
-    \item $\N$ denotes the set of natural integers and $\R$ the set of real numbers.
+    \item $\N$ denotes the set of natural integers and $\R$ the field of real numbers.
     \item Vectors are written in bold letters, e.g. $\xx,\, \yy \in \R^p$.
+    \item $\0$ and $\1$ are the vectors whose all entries are $0$ and $1$ respectively,
+        and whose sizes are inferred by the context.
+    \item For a vector $\vv$, we note $\norm{\vv}_0$ the number of non-zero entries of $\vv$ (that is, its cardinality).
     \item Matrices are written in capital letters, e.g. $X \in \R^{n \times p}$.
     \item We may cast any vector $\xx \in \R^p$ to a column matrix $x \in \R^{p \times 1}$ with the same entry values.
     \item We note $\odot$ the Hadamard (element-wise) product between two vectors or matrices.
-    \item $\0$ and $\1$ are the vectors whose all entries are $0$ and $1$ respectively, and whose size is inferred by the context.
-    \item For a vector $\vv$, we note $\norm{\vv}_0$ the number of non-zero entries of $\vv$ (that is, its cardinality).
-    \item The $\diag$ operator can be used in two contexts;
+    \item Given two matrices $A$ and $B$, we note $\big[ A, B \big]$ and $\big[ A; B \big]$ their horizontal and
+        vertical concatenation respectively (if dimensions match).
+    \item The $\diag$ operator may be used in two contexts;
     either to transform a vector into a diagonal matrix whose diagonal entries match the vector,
     or to extract the diagonal of a matrix.
-    For example
+    For example,
     \begin{equation*}
         \diag \begin{bmatrix}
                   1\\
@@ -36,13 +39,14 @@
             4
         \end{bmatrix}
     \end{equation*}
-    \item Given two matrices $A$ and $B$, we note $\big[ A, B \big]$ and $\big[ A; B \big]$ their horizontal and
-    vertical concatenation respectively (if dimensions match).
-    \item Functions $\R \to \R$ applied to matrices are implicitly performed element-wise, unless otherwise specified.
-    \item $\Eb{\cX}$ denotes the expectation of a random variable (or vector) $\cX$.
-    \item Given a set $\cS$, $\abs{\cS}$ and $\#\cS$ denote its cardinality.
     \item The sets of $n \times n$ symmetric matrices,
-    symmetric positive semidefinite,
-    and symmetric positive definite
-    are denoted by $S^n$, $S^n_+$ and $S^n_{++}$ respectively.
+        symmetric positive semidefinite,
+        and symmetric positive definite
+        are denoted by $S^n$, $S^n_+$ and $S^n_{++}$ respectively.
+    \item Functions $\R \to \R$ applied to vectors or matrices are implicitly performed element-wise,
+        unless otherwise specified.
+    \item $\Eb{\cX}$ denotes the expectation of a random variable (or vector) $\cX$.
+    \item Given two random variables (or vectors) $\cX,\, \cY$,
+        we note $\cX \independent \cY$ the fact that they are independent.
+    \item Given a set $\cS$, $\abs{\cS}$ and $\#\cS$ denote its cardinality (number of elements).
 \end{itemize}

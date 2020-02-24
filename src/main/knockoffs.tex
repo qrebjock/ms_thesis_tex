@@ -1,8 +1,8 @@
 \chapter{The knockoffs filter framework}\label{ch:knockoffs}
 
-In 2015 Barber-Candès introduce the knockoffs framework and extend it later in 2018 to more general settings
+In 2015 Barber-Candès introduced the knockoffs framework and extended it later in 2018 to a more general setting
 (allowing in particular to perform feature selection in the high dimension context).
-The goal is to control the false discovery rate as defined in~\ref{eq:fdr_def}, while maintaining a reasonable power.
+The goal is to control the false discovery rate as defined in Section~\ref{sec:fdrc}, while maintaining a reasonable power.
 More formally, let $X \in \R^{n \times p}$ be a a feature matrix and $\yy \in \R^n$ the associated target vector.
 Suppose $\yy$ depends only on the subset of features $\cS \subseteq \fset$.
 Given some $\fdr$ target $\fdrtarget \in [0, 1]$, we wish to find a procedure such as, in average,
@@ -11,10 +11,8 @@ To do so, the key idea is to construct for each original feature $X_j$, $j \in \
 a knockoff (that is to say, fake) feature $\tilde{X}_j$ which is known to be out of the model.
 Original features are then selected only if they prove to be more significant than their knockoff counterparts.
 
-Note $\Sigma = X^\top X$.
-
 To compare a feature and its knockoff several quantities will be computed by interchanging them.
-For this reason, we define in~\ref{def:swap} the $\swap$ operator.
+For this reason, we define the $\swap$ operator.
 \begin{definition}\label{def:swap}
     \text{($\swap$ operator)}
     Given two matrices $A,\,B \in \R^{n \times p}$ of same size,
@@ -90,10 +88,11 @@ However, constructing knockoffs meeting the first distribution equality is pract
 
 In the particular case where $\cX$ is multivariate gaussian, the exact distribution of $\tcX$ can be derived.
 \begin{proposition}
-    Suppose that $\cX \sim \cN(\bmu, \Sigma)$.
+    \label{prop:gaussian_knockoffs}
+    Suppose that $\cX \sim \cN(\bmu,\, \Sigma)$.
     If $\tcX$ is a random variable such that
     \begin{equation*}
-        \big[ \cX; \tcX \big] \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix}, \Omega\bigg)
+        \big[ \cX; \tcX \big] \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix},\, \Omega\bigg)
         ,\quad\text{where }\quad
         \Omega = \begin{bmatrix}
             \Sigma & \Sigma - \diag \bs\\
@@ -104,8 +103,8 @@ In the particular case where $\cX$ is multivariate gaussian, the exact distribut
     \end{equation*}
     then $\big[\cX, \tcX \big]$ satisfies the $\swap$ property~\ref{itm:cond_swap},
     provided that $\Omega$ is positive semidefinite (so that it is indeed a covariance matrix).
-\end{proposition}\label{prop:gaussian_knockoffs}
-In the proposition~\ref{prop:gaussian_knockoffs},
+\end{proposition}
+In Proposition~\ref{prop:gaussian_knockoffs},
 $\bs \in \R^p$ can be any vector such that $\Omega \succeq \0$.
 We will come back later to the choice of $\bs$ which is actually crucial.
 For now, assume that $\bs$ satisfies this assumption.
@@ -113,17 +112,17 @@ This result gives a way of constructing the knockoff features from $X$.
 Indeed, as $\big[ \cX; \tcX \big]$ is multivariate normal, we may compute the exact distribution of
 $\tcX \mid \cX$ with classical formulas~\cite{conditional_normal} as shown in~\ref{eq:conditional_gaussian_knockoffs}.
 \begin{equation}\label{eq:conditional_gaussian_knockoffs}
-    \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
+    \tcX \mid \cX \sim \cN\left( \bupsilon,\, \Upsilon \right)
     ,\qquad\text{where}\quad
     \begin{cases*}
         \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
-        \Upsilon = \diag(\bs)\left( 2\mI_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+        \Upsilon = \diag(\bs)\left( 2I_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
     \end{cases*}
 \end{equation}
 To put this into practice, one would compute the empirical mean
 $\hat{\bmu} \in \R^p$ and covariance $\hat{\Sigma} \in \R^{p \times p}$ of $\cX$
 using the observed feature matrix $X$.
-Then, each row of $\tX$ is sampled according to a gaussian distribution $\cN\left( \bupsilon, \Upsilon \right)$
+Then, each row of $\tX$ is sampled according to a gaussian distribution $\cN\left( \bupsilon,\, \Upsilon \right)$
 whose parameters are described in~\ref{eq:conditional_gaussian_knockoffs}.
 Note in particular that the construction process is random;
 if it is repeated, it may very well return different knockoffs, and thus different

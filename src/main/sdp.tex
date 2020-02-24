@@ -43,7 +43,7 @@ In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its es
 For any psd matrix $A \in \R^p$, $A + \alpha I_{p \times p}$ has the same eigenvalues as $A$, but shifted by $\alpha$.
 It gives a fast and simple way to find a feasible $\bs$.
 \begin{equation}\label{eq:equi}
-    s_j = \min(2\lambda_{\min}(\cove),\, 1)
+    s_j = 2\lambda_{\min}(\cove)
     \quad\text{ for all } 0 \leq j \leq p
 \end{equation}
 The problem of finding the smallest eigenvalue $\lambda_{\min}(\cove)$ can be solved efficiently,
@@ -87,7 +87,7 @@ This can be formulated in the optimization problem~\ref{eq:sdp}.
     \qquad
     \text{subject to } \begin{cases}
         s_j \geq 0\text{ for all } j\\
-        \diag \bs \preceq \tcovm
+        \diag \bs \preceq \tcove
     \end{cases}
 \end{equation}
 This problem is a structured semidefinite program (SDP) and can efficiently be solved for small values of
@@ -96,7 +96,7 @@ For larger values of $p$, even first order methods like
 SCS~\cite{sdp_scs} or alternating direction~\cite{sdp_admm}
 quickly become intractable.
 In memory, it needs roughly $\cO(m^2)$ where $m$ is the number of constraints.
-Even though the convergence speed depends a lot on $\covm$,
+Even though the convergence speed depends a lot on $\cove$,
 it experimentally appears that alternative methods have to be considered when $p > 1000$.
 The Figure~\ref{fig:cvx_sdp_times} shows the convergence time of the solvers SCS and MOSEK as a function of $p$.
 Theoretically, it takes $\cO(p^3)$ and it is clear that when $p$ is more than a few thousands.
@@ -107,10 +107,11 @@ Moreover, most solutions returned by these algorithms are actually infeasible be
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/cvx_sdp_times.pdf}
     \caption{
         Time (in seconds) required to converge for SCS (blue) and MOSEK (orange) solvers
-        as a function of $p$ (in log-log scale).
+        as a function of $p$ in log-log scale.
         Rapidly, MOSEK needs too much memory and can't be run for $p > 150$.
         Both match the theoretical $\cO(p^3)$ rate and SCS already needs 15 minutes for $p = 1000$.
-        See Appendix~\ref{sec:cvx_times} for details on the data generation.
+        See Appendix~\ref{sec:cvx_times} for details regarding the random generation of covariance
+        matrices $\cove$.
     }
     \label{fig:cvx_sdp_times}
 \end{figure}
@@ -188,7 +189,7 @@ Suppose $M$ is structured as
         \yy & B
     \end{bmatrix}
 \end{equation*}
-where $B$ is symmetric.
+where $B$ is symmetric and invertible.
 \begin{lemma}\label{lemma:schur1}
     Using Schur complements (see Appendix~\ref{sec:schur_complement}), it holds that M is psd if and only if
     \begin{equation*}
@@ -200,7 +201,7 @@ where $B$ is symmetric.
 In subscript notations, this is equivalent to $M_{1^c,\, 1^c} \succeq \0$ and
 $M_{1,\, 1} - M_{1^c,\, 1}^\top M_{1^c,\, 1^c} M_{1^c,\, 1} \geq 0$.
 This statement can be generalized as follows.
-For any $j \in \fset$, M is psd if and only if both conditions are satisfied
+For any $j \in \fset$, M is psd if and only if both conditions in~\ref{eq:psd_schur_permutation} are satisfied
 \begin{equation}\label{eq:psd_schur_permutation}
     \begin{cases}
         M_{j^c,\, j^c} \succeq \0\\
@@ -209,7 +210,7 @@ For any $j \in \fset$, M is psd if and only if both conditions are satisfied
 \end{equation}
 \begin{proof}
     Let $j \in \fset$.
-    Let $P$ be the permutation matrix changing $1 \leftrightarrow j$ and letting other columns unchanged.
+    Let $P$ be the permutation matrix swapping columns $1 \leftrightarrow j$ and letting other columns unchanged.
     In two-line form, it is written
     \begin{equation*}
         P = \begin{pmatrix}
@@ -219,12 +220,13 @@ For any $j \in \fset$, M is psd if and only if both conditions are satisfied
     \end{equation*}
     M is psd if and only if $P^\top M P$ is psd.
     $P^\top M P$ is $M$ with lines and columns $1$ and $j$ swapped.
-    By applying Lemma~\ref{lemma:schur1}, we get the result.
+    By applying Lemma~\ref{lemma:schur1} on it, we get the result.
 \end{proof}
 
 \subsection{Coordinate ascent}\label{subsec:coordinate_ascent}
 
-The previous observation will be useful to characterize the feasibility of a potential solution $\bs$ of the SDP\@.
+The previous observation will be useful to characterize the feasibility of a potential solution
+$\bs$ of the SDP~\ref{eq:sdp}.
 Using~\ref{eq:psd_schur_permutation},
 it appears that the feasibility of $\bs$ is equivalent to the three following conditions,
 for any $j \in \fset$
@@ -238,7 +240,7 @@ for any $j \in \fset$
         \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \succeq \0
     \end{cases}
 \end{equation}
-This observation motivates the following approach, as described in~\cite{block_coordinate_sdp}.
+This observation motivates the following coordinate approach, as described in~\cite{block_coordinate_sdp}.
 Start with a feasible solution $\bs_0$, for example $\bs_0 = \0_p$.
 At each iteration, only one coordinate $j$ of $\bs$ will be updated by optimizing
 a sub-objective.
@@ -256,15 +258,16 @@ $s_j = \max\Big( \tcove_{j,\, j}
     ,\, 0 \Big)
 $.
 Unfortunately, this method is not guaranteed to converge to the global maximum, even when the problem is concave.
-A slight modification will save us.
+A slight modification depicted in the next section will save us.
 
 \subsection{Log-barrier}\label{subsec:log_barrier}
 
 Instead of optimizing~\ref{eq:sdp},
-we absorb the constraint $\tcove \succeq \bs$ into the objective as described in §11.3 of~\cite{convex_optimization}.
+we absorb the constraint $\tcove \succeq \bs$ into the objective by penalizing solutions
+$\bs$ too close to the feasibility frontier, as described in §11.3 of~\cite{convex_optimization}.
 It depends on an additional term
 $\lambda \cdot \log\det\big( \tcove - \diag\bs \big)$
-for some coefficient $\lambda > 0$.
+for some coefficient $\lambda > 0$:
 \begin{equation}\label{eq:sdp_log_barrier}
     \underset{\bs \in \R^p}{\argmax}\;\,
     \sum_{j = 1}^p s_j
@@ -352,7 +355,7 @@ i.e. $\bs \geq \0$ is of the form $L \leq \diag\bs \leq U$.
 \end{algorithm}
 
 The bottleneck of Algorithm~\ref{alg:coordinate_ascent_log_barrier} is the inversion of the matrix
-$Q_j \in \R^{p - 1 \times p - 1}$ which takes $\cO\left( p^3 \right)$ steps.
+$Q_j \in \R^{(p - 1) \times (p - 1)}$ which takes $\cO\left( p^3 \right)$ steps.
 As it is done in every inner iteration, the algorithm's time complexity is
 $\cO\left( n_\text{iters} \cdot p^4 \right)$ when implemented naively.
 
@@ -368,9 +371,9 @@ or at least can be approximated adequately by such a low-rank estimate~\cite{big
 An intuitive explanation is that there is only a small number of latent features explaining most of the data.
 
 In this section, we suppose that the estimated covariance matrix $\cove$ has the following structure
-\begin{equation*}
+\begin{equation}\label{eq:low_rank_structure}
     \cove = D + U \Lambda U^\top
-\end{equation*}
+\end{equation}
 where $U \in \R^{p \times k}$ satisfies $U^\top U = I_k$,
 and both $D \in \R^{p \times p},\, \Lambda \in \R^{k \times k}$
 are diagonal and psd.
@@ -460,7 +463,7 @@ a function of $p$ and $k$.
     \caption{
         Convergence times of the low-rank coordinate ascent algorithm~\ref{alg:low_rank_coordinate_ascent}
         as a function of $p$ and $k$.
-        It confirms the theoretical $\cO(n_{\text{iters}} \cdot p \cdot k^3)$.
+        It confirms the theoretical $\cO(n_{\text{iters}} \cdot p \cdot k^3)$ rate.
         In practice,
         the algorithm converges much faster to an appropriate solution when using a larger tolerance threshold.
         See Appendix~\ref{sec:coordinate_ascent_data} for details regarding the random data generation.
@@ -488,7 +491,7 @@ As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
 nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
 We show here how to factorize $\Upsilon$ in a cheap way,
 requiring only $\cO\left( k \cdot p \right)$ memory and $\cO\left( k\cdot p^2 \right)$ operations.
-As shown in~\ref{subsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
+As shown in Section~\ref{subsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
 Using the low-rank structure $\cove = D + U\Lambda U^\top$,
 the Sherman–Morrison–Woodbury formula (see Appendix~\ref{sec:sherman}) gives
 \begin{align*}

@@ -1,9 +1,8 @@
 \chapter{Feature selection}\label{ch:fs}
 
 We introduce in this chapter the concepts of feature selection and false discovery rate control,
-as well as a short review of a few methods that are usually employed.
-Finally, we detail the knockoff framework developed by Barber-Candès,
-a recent approach to control the false discovery rate when performing feature selection.
+as well as a short review of a few methods that are usually employed,
+including the Lasso and Benjamini–Hochberg-Yekutieli procedures.
 
 \section{Background on feature selection}\label{sec:bfs}
 
@@ -11,10 +10,11 @@ a recent approach to control the false discovery rate when performing feature se
 
 Feature selection is an active area of research in statistics and machine learning.
 It primarily consists in identifying the most relevant features (or covariates) explaining an observed variable.
-It is closely related to Occam's razor which states that the simplest explanation is often the best one.
+It is closely related to Occam's razor which is a principle stating that
+the simplest explanation is often the best one.
 More formally, let $\cX$ be a $p$-dimensional random vector representing observed features
 and $\cY$ a random target that may depend on $\cX$.
-For example, $\cX$ could be the level of expression of the genes of an individual,
+For example, $\cX$ could be the levels of expression of the genes of an individual,
 and $\cY \in \zoset$ a binary response indicating whether or not the person has some disease.
 We wish to find the subset of covariates $\cS \subseteq \fset$ that best explains the target $\cY$,
 be it a regression or a classification problem.
@@ -26,19 +26,19 @@ Such a subset is not necessarily unique
 \begin{wrapfigure}{l}{0.5\textwidth}
     \includegraphics[width=1\linewidth]{figures/fs_subset_not_unique.pdf}
     \caption{
-    Illustration of the non-uniqueness of the Markov blanket.
-    Here $\cX_1 \sim \cN\left( 0, 1 \right)$,
-    $\cX_2 = \cX_1^2$,
-    and $\cY$ is $\cC_+$ if $\abs{\cX_1} \geq \frac{1}{2}$,
-    $\cC_-$ otherwise.
-    Both $\cX_1$ and $\cX_2$ alone are enough to predict $\cY$.
+        Illustration of the non-uniqueness of the Markov blanket.
+        Here $\cX_1 \sim \cN\left( 0,\, 1 \right)$,
+        $\cX_2 = \cX_1^2$,
+        and $\cY$ is $\cC_+$ if $\abs{\cX_1} \geq \frac{1}{2}$,
+        $\cC_-$ otherwise.
+        Both $\cX_1$ and $\cX_2$ alone are enough to predict $\cY$.
     }
     \label{fig:fs_subset_not_unique}
 \end{wrapfigure}
 Markov blanket~\cite{markov_blanket}, b~\cite{markov_blanket_fs}.
 We define the set of null features $\cH_0 \subseteq \fset$ as follows:
 $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
-(where $\cX_{-j}$ denotes that all column entries are kept except the $j$th).
+(where $\cX_{-j}$ denotes that all vector entries are kept except the $j$th).
 The goal is thus to find a procedure selection a subset of features
 $\hat{\cS} \subseteq \fset$.
 
