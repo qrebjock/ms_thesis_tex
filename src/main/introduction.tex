@@ -4,35 +4,51 @@
 \addcontentsline{toc}{chapter}{Introduction}
 
 Feature selection is an active area of research in statistics and machine learning aiming at
-making models more interpretable by identifying most relevant covariates explaining an observed phenomenon.
-In the past two decades, acquiring data has become
-Datasets end up with a number of features of several dozens of thousands.
-Often, it is also easier to measure features than to label the sample with the right category.
-Indeed, the latter often requires a human and is very costly.
-in this setup, feature selection is particularly challenging as the number of observed samples might be much
-smaller than the number of covariates.
-It is for example the case of fMRI data and genomic data.
+making models more interpretable, among other things.
+The idea is to identify the most relevant observed covariates that best explain a phenomenon.
+Often, one is interested in selecting as many pertinent features (true positives) as possible,
+that is, maximizing true discoveries,
+while maintaining the number of false positives under a certain threshold.
+This problem is called false discovery rate control and finds applications in many sciences.
+This is why a multitude of techniques have been developed to this end,
+the most widely used being~\cite{bh}.
+However, in the past two decades, acquiring massive amounts of data has become increasingly cheaper
+and it is now frequent that datasets contain several dozens of thousands of features.
+A common practice is to measure as many variables as possible,
+and figure out afterwards which of them prove to be valuable.
+On top of that, measuring covariates is often simpler than labeling samples with the right category,
+as the latter requires human efforts and can hardly be automatized.
+For that reason, many datasets have more features than samples
+and it is especially the case in some fields like biology.
+For instance, genomic and fMRI data contain a huge amount of feature but relatively low number of patients.
+In this high dimension setup, feature selection and false discovery rate control are particularly challenging
+because estimations based on samples suffer from a high variance.
 
-In this master thesis,
-The first chapter introduces the concept of feature selection,
-false discovery rate,
-and the knockoff framework developed by Barber-Candès.
+Recently~\citet{fixed_x_knockoffs} introduced the knockoffs framework,
+which is a set of procedures to perform feature selection
+that are proven to theoretically control the false discovery rate under mere assumptions.
+The key idea is to build a knockoff (that is, fake) feature for each original feature,
+and compare their significance against a statistical model.
+This framework was revisited and extended to a more general inference setting~\citep{model_x_knockoffs},
+allowing in particular to perform feature selection in the high dimension case,
+that is when the number of features is larger than the number of samples.
+The generality of this selection procedure
+and the fact that many statistical models can be plugged in make it particularly appealing.
+In this work, we focus on the high-dimensional knockoff setting,
+Several bottleneck of the knockoff procedure are addressed.
+Constructing quality knockoffs relies on solving a SDP problem
+which quickly becomes intractable as the dimension increases.
+
+This master thesis is organized as follows.
+Chapter~\ref{ch:fs} introduces the concept of feature selection and
+false discovery rate control, along with a few techniques that are usually employed.
+Chapter~\ref{ch:knockoffs} details the knockoff selection procedure developed by Barber-Candès
+and principal theoretical guarantees.
 Chapter 2 introduces a sparse version of naive Bayes that scales linearly in the number of features against which
 it is trained.
-
-Feature selection is an active area of research in machine learning whose primary goal is to make models
-more interpretable by keeping most relevant covariates.
-Often, one is interested in selecting as many true positive features as possible
-(that is, maximizing true discoveries),
-while maintaining the false discovery rate under some threshold.
-In the past decades
-In this high-dimensional setting,
-that is when the number of features is larger than the number of samples,
-the problem of feature selection becomes particularly challenging.
-
-Recently, Barber-Candès introduced the knockoffs framework to control the false discovery rate
-when performing feature selection.
-The key idea is to build a knockoff feature for each original feature
-
-In this master thesis, we focus on the high-dimensional feature selection setting.
-Several bottleneck of the knockoff procedure are addressed.
+In Chapter~\ref{ch:sdp},
+we focus on the knockoff features constitution part
+and propose a log-barrier coordinate ascent algorithm to solve the main bottleneck of the construction.
+We show that low-rank covariance approximations
+Finally, in Chapter~\ref{ch:exp} we detail experiments performed on genetic data and prove the scalability
+and efficiency of our methods.

@@ -24,7 +24,7 @@ headsepline, % Uncomment to get a line under the header
 
 % \usepackage[backend=biber,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
 % \addbibresource{bibliography.bib} % The filename of the bibliography
-% \usepackage{natbib}
+\usepackage{natbib}
 % \bibliographystyle{plainnat}
 % \bibliography{blabla}
 % \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
@@ -35,8 +35,8 @@ headsepline, % Uncomment to get a line under the header
 
 \geometry{
     paper=a4paper, % Change to letterpaper for US letter
-    inner=1.2cm, % Inner margin
-    outer=2.5cm, % Outer margin
+    inner=1.7cm, % Inner margin
+    outer=3cm, % Outer margin
     bindingoffset=.5cm, % Binding offset
     top=1.5cm, % Top margin
     bottom=1.5cm, % Bottom margin
@@ -101,8 +101,9 @@ headsepline, % Uncomment to get a line under the header
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \include{tail/appendix}
     \backmatter
-    \bibliographystyle{plain}
+    \bibliographystyle{plainnat}
     \bibliography{bibliography}
+    \addcontentsline{toc}{chapter}{Bibliography}
     % \include{tail/biblio}
     % \printbibliography[heading=bibintoc]
     % Add your glossary here

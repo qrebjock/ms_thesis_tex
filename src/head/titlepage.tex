@@ -1,20 +1,38 @@
+\newgeometry{centering,margin=1.5cm}
+
 \begin{titlepage}
 \begin{center}
-%\large
+
 \sffamily
 
+\null\vspace{1cm}
 
-\null\vspace{2cm}
-{\huge High-dimensional knockoff feature selection\\[12pt] Efficiently control the false discovery rate} \\[24pt]
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.6\linewidth]{figures/epfl.pdf}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.6\linewidth]{figures/inria_pms.pdf}
+	\end{subfigure}
+\end{figure}
 
-\vfill
+\vspace{2cm}
 
+\textsc{Master of Data Science}\\
+\textsc{Machine Learning and Optimization laboratory}\\
+\textsc{Master Project}\\
+
+\vspace{2cm}
+
+\rule{0.85\textwidth}{2pt}\\[8pt]
+{\huge High-dimensional knockoff feature selection}\\[6pt]
+{\large Scalable false discovery rate control}\\[2pt]
+\rule{0.85\textwidth}{1pt}\\
+\vspace{5cm}
 \begin{tabular} {cc}
-\parbox{0.3\textwidth}{
-	\includegraphics[width=4cm]{figures/epfl}
-	\includegraphics[width=4cm]{figures/inria_cmjn.pdf}
-}
-&
 \parbox{0.7\textwidth}{%
 	School of Computer and Communication Sciences\\
 	École Polytechnique Fédérale de Lausanne\\
@@ -29,6 +47,8 @@ Supervised by\\[4pt]
 %
 Paris, Inria, March 2020}
 \end{tabular}
+
 \end{center}
-\vspace{2cm}
 \end{titlepage}
+
+\restoregeometry

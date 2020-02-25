@@ -11,4 +11,9 @@ and in particular the construction of the knockoff features,
 and the computation of statistics associated to each aggregated feature.
 
 Building knockoffs inducing a high statistical power relies on the optimization of a semidefinite program.
-Hopefully, the structure and the simple bounds of this SDP
+Hopefully, the structure and the simple bounds of this SDP allow us to perform coordinate ascent which
+is guaranteed to converge in this case.
+On top of that, a low-rank approximation structure speeds up the computations by several order of magnitude.
+Experiments show that this approach keeps a reasonably high power.
+
+Applications to a wider range of datasets, such as fMRI or will be explored in future work.

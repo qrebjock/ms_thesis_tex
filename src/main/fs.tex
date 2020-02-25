@@ -23,8 +23,9 @@ that is $\left( \cX,\, \cY \right) \sim \mathcal{P}_{\cX,\, \cY}$.
 Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope,
 one may be interested in finding on which subset $\cS$ of features $\cP_{\cY \mid \cX}$ depends.
 Such a subset is not necessarily unique
-\begin{wrapfigure}{l}{0.5\textwidth}
-    \includegraphics[width=0.95\linewidth]{figures/fs_subset_not_unique.pdf}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\linewidth]{figures/fs_subset_not_unique.pdf}
     \caption{
         Illustration of the non-uniqueness of the Markov blanket.
         Here $\cX_1 \sim \cN\left( 0,\, 1 \right)$
@@ -36,7 +37,7 @@ Such a subset is not necessarily unique
         or the distance to origin $\cZ$ alone.
     }
     \label{fig:fs_subset_not_unique}
-\end{wrapfigure}
+\end{figure}
 Markov blanket~\cite{markov_blanket}, b~\cite{markov_blanket_fs}.
 We define the set of null features $\cH_0 \subseteq \fset$ as follows:
 $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
@@ -65,8 +66,8 @@ one would want to perform it on a dataset.
     \item Improving the generalization of machine learning models.
     Irrelevant features may only be noise and fitting a model against them at train time
     is prone to over-fitting noise.
-    \item Avoiding the curse of dimensionality~\cite{curse_dimensionality}.
-    For example, the $k$-nearest neighbors algorithms~\cite{knn} is known to perform badly as the feature space
+    \item Avoiding the curse of dimensionality~\citep{curse_dimensionality}.
+    For example, the $k$-nearest neighbors algorithms~\citep{knn} is known to perform badly as the feature space
     dimension increases.
     The number of samples actually has to grow exponentially in the number of features in order for the algorithm
     to perform decently.

@@ -143,7 +143,7 @@ same first two moments (mean and covariance).
 It turns out to be the case if $\tcX \mid \cX$ is constructed as described in~\ref{eq:conditional_gaussian_knockoffs}.
 In the remaining of this master thesis, we will restrain ourselves to the gaussian hypothesis.
 
-The first knockoff paper~\cite{fixed_x_knockoffs} introducing the \textit{fixed}-X knockoffs relied on similar correlation
+The first knockoff paper~\citep{fixed_x_knockoffs} introducing \textit{fixed}-X knockoffs relied on similar correlation
 properties between the original and the knockoff features.
 It however imposed $p \leq n$ and fewer statistics would yield theoretical guarantees regarding the FDR control
 of the procedure.
@@ -353,6 +353,10 @@ The control guarantees hold for any $\bs \in \R^p$ such that the covariance matr
     \end{equation*}
     Finally, $\Omega_{/\Sigma} = M_{/\Sigma}$ is p.s.d.\ if and only if both $\Sigma - \frac{1}{2}D$ and $D$ are p.s.d.
 \end{proof}
+The FDR control holds for \emph{any} $\bs$ satisfying this constraint,
+but some solutions lead to a better statistical power.
+As will be shown in Chapter~\ref{ch:sdp},
+finding good solutions amounts to solving a SDP which becomes intractable when $p$ is large.
 
 \subsection{Statistics computation}\label{subsec:bot_stats}
 
