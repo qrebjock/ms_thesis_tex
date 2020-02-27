@@ -12,9 +12,8 @@ Code~\ref{code:full_rank_cython} is an example of implementation of Algorithm~\r
         @cython.boundscheck(False)
         @cython.wraparound(False)
         @cython.nonecheck(False)
-        cdef _full_rank(
-        int p, double[:, ::1] Sigma, int max_iterations, double lam, double mu, double tol
-        ):
+        cdef _full_rank(int p, double[:, ::1] Sigma, int max_iterations,
+                        double lam, double mu, double tol):
         cdef double[::1] s = np.zeros(p)
         cdef double[:, ::1] A = np.linalg.inv(Sigma) / 2
         cdef double[::1] temp = np.zeros(p)

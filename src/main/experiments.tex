@@ -1,8 +1,32 @@
 \chapter{Experiments}\label{ch:exp}
 
 In this chapter,
-we show experiments
+we show experiments performed on genetic data.
+That kind of data is usually high dimensional.
+For this reason, the tools developed in the previous chapters are particularly suited to solve it.
 
 \section{Setup}\label{sec:exp_setup}
+
+\subsection{Genetic data}\label{subsec:genetic_data}
+
+\footnote{
+    Data available at \href{https://amp.pharm.mssm.edu/archs4/download.html}{this address},
+    under the filename \texttt{human\_matrix.h5 v8}.
+}
+
+\begin{table}[!htb]
+    \centering
+    \setlength{\tabcolsep}{2pt}
+    {\small
+        \begin{tabular}{|c|c|c|}\hline
+        \textbf{Samples} & \textbf{Total features} & \textbf{N}\\ \hline
+        $42000$ & $350000$  & $13$\\ \hline
+        \end{tabular}
+    }%
+    \caption[short]{
+        ARCHS4 dataset
+    }
+    \label{tab:archs4_dataset}
+\end{table}
 
 \section{Results}\label{sec:exp_results}

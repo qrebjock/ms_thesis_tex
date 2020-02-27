@@ -139,7 +139,7 @@ Solve the one dimensional maximization
 Finally, pick $\bs = \gamma \cdot \hat{\bs}$.
 
 \begin{remark}
-    Note that the two extreme options $\coveapprox = \mI$ and $\coveapprox = \cove$ yield
+    Note that the two extreme options $\coveapprox = I$ and $\coveapprox = \cove$ yield
     the same solutions as solving equi-knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
 \end{remark}
 
@@ -370,18 +370,41 @@ Hopefully, big data matrices and especially correlation matrices often have an u
 or at least can be approximated adequately by such a low-rank estimate~\cite{big_data_low_rank}.
 An intuitive explanation is that there is only a small number of latent features explaining most of the data.
 
-In this section, we suppose that the estimated covariance matrix $\cove$ has the following structure
+\subsection{Factor model}\label{subsec:factor_model}
+
+We approximate the covariance $\cove$ with the following structure.
 \begin{equation}\label{eq:low_rank_structure}
-    \cove = D + U \Lambda U^\top
+\cove = D + U \Lambda U^\top
 \end{equation}
 where $U \in \R^{p \times k}$ satisfies $U^\top U = I_k$,
 and both $D \in \R^{p \times p},\, \Lambda \in \R^{k \times k}$
 are diagonal and psd.
 $k$ is typically much lower than $p$ to save has much memory and computations as possible.
+
+If $X$ is reasonably large,
+we can consider an SVD decomposition $X = V \Lambda V$
+
+Additionally, the empirical covariance estimator performs poorly in high dimension.
+Shrunk estimators like the one proposed by~\cite{ledoit_wolf} are proven to be superior in that situation.
+Suppose $\cove = \frac{1}{n}X^\top X$ is the empirical estimator.
+Note $\mu = \Tr( \cove ) / p$ and $\delta$ a shrinkage coefficient.
+The shrunk covariance estimator is then given by
+\begin{equation*}
+    \cove_\delta = (1 - \delta)\cove + \delta\mu I
+\end{equation*}
+Finding the optimal coefficient $\delta$ can be done in $\cO\left( n^2 \cdot p \right)$ steps.
+
+Randomized SVD algorithms~\citep{random_svd} may be employed to speed-up the process,
+or to achieve alternating descent on $D$ and $U$.
+We implement such algorithms and show that they scale moderately well with $n$ and $p$.
+One single step is often enough.
+
+\bigbreak
+In the following sections,
+we suppose that the decomposition $\cove = D + U \Lambda U^\top$
+was computed.
 Even in the (likely) case where the covariance matrix is not exactly diagonal plus low-rank,
 this approximating structure is general enough to yield satisfying results.
-In~\cite{low_rank_cov_estimation} the authors study this covariance estimation setting and provide an
-efficient algorithm to build it.
 
 \subsection{Low-rank coordinate ascent}\label{subsec:low_rank_sdp}
 

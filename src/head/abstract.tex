@@ -8,23 +8,24 @@
 \addcontentsline{toc}{chapter}{Abstract} % adds an entry to the table of contents
 \centering
 \begin{minipage}[b]{\dimexpr\paperwidth-10cm}
-      High-dimensional feature selection has become common in many sciences over the past decades
-      because of advancements in data acquisition,
-      allowing to record dozens of thousands of features.
+      High-dimensional feature selection has become a common task in many sciences over the past decades
+      because of advancements in data acquisition.
+      It is now possible to record dozens of thousands of features at low cost,
+      and it is crucial to find out later which of them are of interest.
       In this master thesis, we focus on false discovery rate control,
-      that is the problem of making as many discoveries as possible
+      that is the problem of making as many relevant selections as possible
       while maintaining the number of false positives under a certain threshold.\\
 
       Recently~\cite{model_x_knockoffs} introduced the knockoffs framework to control the false discovery rate
       when performing feature selection.
-      The key idea is to build a knockoff feature for each original feature, and compare their significance against
+      The key idea is to build a knockoff (fake) feature for each original feature, and compare their significance against
       a statistical model.
       Despite the theoretical possibility to employ this framework in high-dimension, several bottlenecks
       make it unemployable in practice.
-      We take advantage of low-rank approximations to efficiently build knockoff features in high-dimension,
-      and show that alternative significance statistics are faster while maintaining a reasonable statistical power.
+      We take advantage of low-rank approximations to efficiently build knockoff features in high dimension,
+      and show that a reasonable statistical power can be maintained by using accelerated significance statistics.
       We apply these techniques to genetic data and perform FDR control on
-      $\approx 30\,000$ features in a few seconds.\\\\\\
+      $\approx 30\,000$ features in less than a minute on a standard workstation.\\\\\\
 
       \textbf{Keywords}: Feature selection, false discovery rate control, knockoff filter, high dimension
 \end{minipage}

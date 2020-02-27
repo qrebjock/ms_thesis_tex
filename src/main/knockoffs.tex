@@ -369,22 +369,29 @@ in $\left\{ \cC^+,\, \cC^- \right\}$.
 
 \section{Python implementation}\label{sec:python_implementation}
 
-Barber-Candès (along with other coauthor) provided a R and MATLAB implementation
+Barber-Candès (along with other coauthors) provided R and MATLAB implementations
 of the knockoff framework\footnote{
     The R package page can be found at
     \href{https://cran.r-project.org/web/packages/knockoff/index.html}{this address}.
     Sources for both R and MATLAB are stored in this
     \href{https://github.com/msesia/knockoff-filter}{GitHub repository}.
 }.
-To the best of our knowledge, no unified Python implementation
-The implementation follows deliberately the Scikit-Learn~\cite{sklearn} structure.
+To the best of our knowledge, no public and unified Python implementation is presently available.
+As Python is a very popular language in the machine learning community,
+and as it keeps growing year after year,
+we decided to make a Python implementation that contains fundamental components and that may be extended
+depending on the needs\footnote{
+    The implementation can be found at
+    \href{}{this address}
+}.
+The implementation is deliberately compatible with Scikit-Learn~\cite{sklearn} estimators and .
 It provides 3 main components,
 namely a knockoffs generator \code{KnockoffsGenerator},
 statistics computations utility functions,
 and a selector \code{BaseKnockoffsSelector}.
 \code{KnockoffsGenerator} and \code{BaseKnockoffsSelector} subclass \code{BaseEstimator} and \code{TransformerMixin}
-and \code{BaseEstimator} and \code{SelectorMixin} respectively.
-
+and \code{BaseEstimator} and \code{SelectorMixin} from Scikit-Learn respectively,
+so they are compatible with the Scikit-Learn ecosystem.
 \begin{calgorithm}
 \begin{minted}[linenos]{python}
 selector = SimpleKnockoffsSelector(
@@ -400,3 +407,7 @@ print(f'Selected features: {selector.mask_}')
     Example of knockoffs usage
 }\label{code:python_knockoffs}
 \end{calgorithm}
+
+\bigbreak
+In the following chapters,
+we present the ideas and algorithms that we implemented to make this Python toolkit scalable to large dimensions.
