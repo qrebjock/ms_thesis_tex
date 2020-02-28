@@ -12,13 +12,13 @@ Feature selection primarily consists in identifying the most relevant features (
 explaining an observed variable.
 It is closely related to Occam's razor which is a principle stating that
 the simplest explanation is often the best one.
-As the notion of relevance may be interpreted in more than one way
 More formally, let $\cX$ be a $p$-dimensional random vector representing observed features
 and $\cY$ a random target that may depend on $\cX$.
 For example, $\cX$ could be the levels of expression of the genes of an individual,
 and $\cY \in \zoset$ a binary response indicating whether or not the person has some disease.
 We wish to find the subset of covariates $\cS \subseteq \fset$ that best explains the target $\cY$,
-be it a regression or a classification problem.
+be it a numerical or a categorical variable.
+The notion of relevance of a feature $\cX_j$ can be captured by the dependence of $\cY$ on $\cX_j$.
 To do so, suppose that the joint vector $\left( \cX,\, \cY \right)$ follows some distribution,
 that is $\left( \cX,\, \cY \right) \sim \mathcal{P}_{\cX,\, \cY}$.
 Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope,

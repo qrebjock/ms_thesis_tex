@@ -1,6 +1,6 @@
 \chapter{Efficient knockoffs construction}\label{ch:sdp}
 
-As shown in Chapter~\ref{ch:fs}, in the case of gaussian knockoffs
+As shown in Chapter~\ref{ch:fs}, in the case of gaussian knockoffs,
 $\tX$ can be sampled from a normal distribution $\cN\left( \bupsilon,\, \Upsilon \right)$ whose parameters
 $\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs2}.
 \begin{equation}\label{eq:conditional_gaussian_knockoffs2}
@@ -26,13 +26,14 @@ is indeed a covariance matrix (semidefinite positive).
     \end{bmatrix}
     \succeq \0_{2p \times 2p}
 \end{equation*}
-As shown in proposition~\ref{prop:omega_psd},
+As shown in Proposition~\ref{prop:omega_psd},
 this matrix is semidefinite positive if and only if $\0_{p \times p} \preceq \diag \bs \preceq 2 \Sigma$.
 The first inequality clearly holds if all the entries of $\bs$ are positive.
 It is however trickier to identify all vectors $\bs$ satisfying the second one.
 
-In this chapter, we show why the choice of $\bs$ is important and how to efficiently find a good one
-in the high dimensional setting.
+In this chapter, we show why the choice of $\bs$ is important and how to efficiently find an appropriate one
+in the high-dimensional setting.
+We also form low-rank covariance approximations and procedures to quickly sample $\tcX$.
 In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its estimation from the samples $X$
 (be it empirical or derived from more sophisticated methods).
 
@@ -41,13 +42,14 @@ In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its es
 \subsubsection{A cheap solution}
 
 For any psd matrix $A \in \R^p$, $A + \alpha I_{p \times p}$ has the same eigenvalues as $A$, but shifted by $\alpha$.
-It gives a fast and simple way to find a feasible $\bs$.
+It gives a fast and simple way to find a feasible $\bs$:
+setting all the entries to the smallest eigenvalue of $\tcove$ (\textit{equi}-correlated knockoffs).
 \begin{equation}\label{eq:equi}
     s_j = 2\lambda_{\min}(\cove)
-    \quad\text{ for all } 0 \leq j \leq p
+    \quad\text{for all}\quad 0 \leq j \leq p
 \end{equation}
 The problem of finding the smallest eigenvalue $\lambda_{\min}(\cove)$ can be solved efficiently,
-using for instance a singular value decomposition which runs in $\cO(p^3)$ steps~\cite{svd}.
+using for instance a singular value decomposition which runs in $\cO(p^3)$ steps~\citep{svd}.
 
 \subsubsection{Why it is not desirable}
 
@@ -71,37 +73,34 @@ It makes the knockoff features sufficiently close to the original features
 to fool the estimator computing the statistics.
 However, an original feature $j$ and its corresponding knockoff have a covariance that is smaller the larger $s_j$ is.
 If $s_j$ is close to $0$,
-$\cX_j$ cannot be distinguished from $\tcX_j$ and the selection would suffer from a low power.
-
+$\cX_j$ cannot be distinguished from $\tcX_j$ and the selection is prone to suffer from a low power.
 This fact is even more detrimental when $p$ is large as $\lambda_{\min}$ is likely to be very close to $0$.
-It motivates us to maximize the sum of the entries of $\bs$ and it leads to solving a SDP\@.
 
 \section{SDP knockoffs}\label{sec:sdp}
 
-This observation motivates us to maximize the entries of $\bs$,
+The observation of the previous Section~\ref{sec:equi} motivates us to maximize the entries of $\bs$,
 while maintaining the inequality $\diag\bs \preceq \tcovm$.
 This can be formulated in the optimization problem~\ref{eq:sdp}.
 \begin{equation}\label{eq:sdp}
     \underset{\bs \in \R^p}{\argmax}\;\,
     \sum_{j = 1}^p s_j
     \qquad
-    \text{subject to } \begin{cases}
+    \text{subject to}\quad \begin{cases}
         s_j \geq 0\text{ for all } j\\
         \diag \bs \preceq \tcove
     \end{cases}
 \end{equation}
-This problem is a structured semidefinite program (SDP) and can efficiently be solved for small values of
-$p$ by interior point methods~\cite{interior_point_method_sdp} for example.
-For larger values of $p$, even first order methods like
-SCS~\cite{sdp_scs} or alternating direction~\cite{sdp_admm}
-quickly become intractable.
-In memory, it needs roughly $\cO(m^2)$ where $m$ is the number of constraints.
-Even though the convergence speed depends a lot on $\cove$,
-it experimentally appears that alternative methods have to be considered when $p > 1000$.
-The Figure~\ref{fig:cvx_sdp_times} shows the convergence time of the solvers SCS and MOSEK as a function of $p$.
-Theoretically, it takes $\cO(p^3)$ and it is clear that when $p$ is more than a few thousands.
+This problem is a structured semidefinite program (SDP) and can be solved efficiently for small values of
+$p$ by interior point methods~\citep{sdo_todd, sdp_handbook} for example.
+However, it quickly becomes intractable for large values of $p$ (one thousand or more).
+In memory, these schemes need to store roughly $\cO(m^2)$ floats
+and the time complexity is approximately $\cO\left( m^3 \right)$, where $m$ is the number of constraints
+($p$ is this case).
+Experimentally, alternating direction~\citep{sdp_admm}
+and first order methods like SCS~\citep{sdp_scs} also fail to scale satisfactorily in high dimension.
+Figure~\ref{fig:cvx_sdp_times} shows the convergence time of the solvers SCS and MOSEK as a function of $p$.
+It makes it clear that different approaches have to be considered when $p$ is more than a few thousands.
 Moreover, most solutions returned by these algorithms are actually infeasible because of numerical approximations.
-
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/cvx_sdp_times.pdf}
@@ -116,15 +115,15 @@ Moreover, most solutions returned by these algorithms are actually infeasible be
     \label{fig:cvx_sdp_times}
 \end{figure}
 
-In order to reduce the computation time,
-Barber-Candès suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below.
+In order to reduce the computation time~\cite{model_x_knockoffs}
+suggest to solve an approximated problem of~\ref{eq:sdp} in 2 steps that we describe below.
 \paragraph*{Step 1.}
-Pick an approximation $\coveapprox$ of $\cove$ and solve
+Pick a block-diagonal approximation $\coveapprox$ of $\cove$ and solve
 \begin{equation}\label{eq:sdp_approx}
     \underset{\hat{\bs} \in \R^p}{\argmax}\;\,
     \sum_{j = 1}^p \hat{s}_j
     \qquad
-    \text{subject to } \begin{cases}
+    \text{subject to}\quad \begin{cases}
         \hat{s}_j \geq 0\text{ for all } j\\
         \diag \hat{\bs} \preceq \tcoveapprox
     \end{cases}
@@ -133,30 +132,36 @@ Pick an approximation $\coveapprox$ of $\cove$ and solve
 Solve the one dimensional maximization
 \begin{equation}\label{eq:sdp_approx_1d}
     \underset{\gamma \in \R}{\argmax}\;\,\gamma
-    \quad\text{subject to}\quad
+    \qquad\text{subject to}\quad
     \diag\left( \gamma \cdot \hat{\bs} \right) \preceq \tcove
 \end{equation}
 Finally, pick $\bs = \gamma \cdot \hat{\bs}$.
-
 \begin{remark}
     Note that the two extreme options $\coveapprox = I$ and $\coveapprox = \cove$ yield
     the same solutions as solving equi-knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
 \end{remark}
-
-Solving~\ref{eq:sdp_approx_1d} in step 2 can be done very efficiently using bisection as it is a one-dimensional SDP\@.
-The optimization problem~\ref{eq:sdp_approx} is however the same as the one in~\ref{eq:sdp},
+Solving~\ref{eq:sdp_approx_1d} in Step 2 can be done very efficiently using bisection as it is a one-dimensional SDP\@.
+The optimization problem~\ref{eq:sdp_approx} is the same as the one in~\ref{eq:sdp},
 except for the approximation $\coveapprox$.
 To speed up the computations,
 $\coveapprox$ can be chosen to be a block-diagonal matrix of $k$ blocks.
-The maximization then reduces to $k$ smaller SDPs for which the solutions can be found more efficiently.
-These could even be distributed in several computation nodes.
-Picking $\coveapprox$ is a compromise between available computation time and eventual power of the procedure.
-There is a priori no ideal way to to it.
-The block diagonal assumption depends on the order of the features.
-They should therefore be reordered ahead of time,
-typically by performing a clustering step to group very similar features.
+The maximization then reduces to $k$ smaller SDPs for which solutions can be found more efficiently.
+All the sub-problems being independent, they could even be distributed in several computation nodes.
+Picking $\coveapprox$ is a compromise between available computation time and quality of the approximation
+(hence ultimate statistical power of the procedure).
+The block-diagonal structure can be obtained by reordering columns of $\cove$
+with a clustering step grouping similar features (i.e. highly correlated features).
+
+\bigbreak
+In practice, the block-diagonal structure is unrealistic.
+On top of that, the problem remains intractable when $p$ is a few dozens of thousands,
+even if ten groups of features are identified.
+The clustering step may also be costly,
+and the covariance matrix $\cove$ itself might not even be storable in memory.
 
 \section{A coordinate ascent approach}\label{sec:coordinate_ascent}
+
+We propose here a coordinate ascent algorithm which is proven to converge when coupled with a log-barrier penalty.
 
 \subsection{Notations and preliminaries}\label{subsec:notations_preliminaries}
 
@@ -225,10 +230,8 @@ For any $j \in \fset$, M is psd if and only if both conditions in~\ref{eq:psd_sc
 
 \subsection{Coordinate ascent}\label{subsec:coordinate_ascent}
 
-The previous observation will be useful to characterize the feasibility of a potential solution
-$\bs$ of the SDP~\ref{eq:sdp}.
-Using~\ref{eq:psd_schur_permutation},
-it appears that the feasibility of $\bs$ is equivalent to the three following conditions,
+Using characterization~\ref{eq:psd_schur_permutation},
+it appears that the feasibility of $\bs$ in SDP~\ref{eq:sdp} is equivalent to the three following conditions,
 for any $j \in \fset$
 \begin{equation}\label{eq:schur_sdp_constraints}
     \tcove \succeq \diag \bs \succeq \0
@@ -240,11 +243,10 @@ for any $j \in \fset$
         \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \succeq \0
     \end{cases}
 \end{equation}
-This observation motivates the following coordinate approach, as described in~\cite{block_coordinate_sdp}.
+This observation motivates the following coordinate approach, as described by~\cite{block_coordinate_sdp}.
 Start with a feasible solution $\bs_0$, for example $\bs_0 = \0_p$.
-At each iteration, only one coordinate $j$ of $\bs$ will be updated by optimizing
-a sub-objective.
-As only the coordinates $j$ changes, the constraints remain satisfied if we pick $s_j$ to satisfy
+At each iteration, only one coordinate $j$ of $\bs$ will be updated (to optimize a sub-objective),
+and the constraints remain satisfied if we pick $s_j$ such that
 \begin{equation}\label{eq:sdp_simple_constraints}
     \begin{cases}
         s_j \geq 0\\
@@ -252,20 +254,22 @@ As only the coordinates $j$ changes, the constraints remain satisfied if we pick
             - 4\cove_{j^c,\, j}^\top\big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \big)^{-1}\cove_{j^c,\, j}
     \end{cases}
 \end{equation}
-that is,
-$s_j = \max\Big( \tcove_{j,\, j}
+Consequently, we set $s_j$ to the maximum value keeping the constraints valid,
+that is
+\begin{equation*}
+s_j = \max\Big( \tcove_{j,\, j}
     - 4\cove_{j^c,\, j}^\top\big( \tcove_{j^c,\, j^c} - \diag \bs_{j^c} \big)^{-1}\cove_{j^c,\, j}
     ,\, 0 \Big)
-$.
+\end{equation*}
 Unfortunately, this method is not guaranteed to converge to the global maximum, even when the problem is concave.
-A slight modification depicted in the next section will save us.
+A slight modification depicted in the next section will correct that.
 
 \subsection{Log-barrier}\label{subsec:log_barrier}
 
 Instead of optimizing~\ref{eq:sdp},
 we absorb the constraint $\tcove \succeq \bs$ into the objective by penalizing solutions
-$\bs$ too close to the feasibility frontier, as described in §11.3 of~\cite{convex_optimization}.
-It depends on an additional term
+too close to the feasibility frontier, as described in §11.3 by~\cite{convex_optimization}.
+It depends on the additional term
 $\lambda \cdot \log\det\big( \tcove - \diag\bs \big)$
 for some coefficient $\lambda > 0$:
 \begin{equation}\label{eq:sdp_log_barrier}
@@ -280,7 +284,8 @@ where we consider that $\log 0 = -\infty$.
 Intuitively, a solution $\bs$ such that the minimum eigenvalue of $\tcove - \diag\bs$ gets too close to $0$
 will be penalized by this $\log$ term.
 
-In order to perform coordinate ascent, we are going to use the following lemma.
+\bigbreak
+The following lemma will be helpful to compute the $\log$ term.
 \begin{lemma}
     If $M = \begin{bmatrix}
         \xi & \yy^\top\\
@@ -296,7 +301,7 @@ In order to perform coordinate ascent, we are going to use the following lemma.
     It is an immediate consequence of the formula for the determinant of a block matrix
     given in Appendix~\ref{sec:block_matrix_det}.
 \end{proof}
-With the subscript notations, this identity can be noted as
+With subscript notations, this identity can be noted as
 $\det\left( M \right) = \big( M_{1,\, 1} - M_{1^c,\, 1}^\top M_{1^c,\, 1^c}^{-1} M_{1^c,\, 1} \big)
     \cdot\det\left( M_{1^c,\, 1^c} \right)$.
 Employing the same idea as in~\ref{eq:psd_schur_permutation},
@@ -306,15 +311,20 @@ it can further be generalized to
         \cdot\det\left( M_{j^c,\, j^c} \right)
 \end{equation*}
 for any $j \in \fset$.
-\bigbreak
-By applying it to $\log\det\big( \tcove - \diag\bs \big)$,
-we get that for any $j \in \fset$,
+By applying this to $\log\det\big( \tcove - \diag\bs \big)$,
+we get that
 \begin{equation*}
     \log\det\big( \tcove - \diag\bs \big) =
         \log\big( \tcove_{j,\, j} - s_j - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} \big)
             + \log\det\left( Q_j \right)
 \end{equation*}
+for any $j \in \fset$,
 where $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$ does not depend on $s_j$.
+
+\bigbreak
+Again, we start from a feasible solution $\bs^{(0)} = \0_p$ and perform coordinate ascent.
+At each iteration, a new coordinate $j$ is updated
+and we take advantage of the fact that $Q_j$ doesn't depend on $s_j$.
 The function
 \begin{equation*}
     \alpha \mapsto \alpha
@@ -327,18 +337,34 @@ is concave and setting its derivative to $0$ yields that its maximum is
 The $j$th coordinate is therefore updated as $s_j \leftarrow \max\left( \alpha^\star,\, 0 \right)$.
 Note in particular that this update maintains the feasibility
 conditions~\ref{eq:sdp_simple_constraints} for any value of $\lambda$.
-Section 11.3 of~\cite{convex_optimization} suggests that picking $\lambda = \epsilon / p$ will yield an
-$\epsilon$-optimal solution.
-In practice, an initial $\lambda_0$ is picked and after each coordinate cycle it is multiplied by a decay rate
-$0 < \mu < 1$.
-The choice of $\mu$ is a trade-off.
 
-This log-barrier algorithm is summarized in Algorithm~\ref{alg:coordinate_ascent_log_barrier} in pseudo-code.
-It can be proven to converge to the maximum
+Section §11.3 of~\cite{convex_optimization} suggests that picking $\lambda = \epsilon / p$ will yield an
+$\epsilon$-optimal solution.
+In practice, an initial $\lambda_0$ is picked and it is multiplied by a decay rate
+$0 < \mu < 1$ after each coordinate cycle to refine the solution.
+This scheme can be proven to converge to the maximum
 of the modified objective~\ref{eq:sdp_log_barrier}.
-It is indeed a particular case of Theorem~3 in~\cite{block_coordinate_sdp},
+It is indeed a particular case of Theorem~3 by~\cite{block_coordinate_sdp},
 which applies in this case as the constraints are simple,
 i.e. $\bs \geq \0$ is of the form $L \leq \diag\bs \leq U$.
+
+\bigbreak
+This log-barrier algorithm is summarized in pseudo-code in Algorithm~\ref{alg:coordinate_ascent_log_barrier}.
+The bottleneck is the inversion of the matrix
+$Q_j \in \R^{(p - 1) \times (p - 1)}$ in line~\ref{alg:line:q_inv} which takes $\cO\left( p^3 \right)$ steps.
+As it is done in every inner iteration, the time complexity of Algorithm~\ref{alg:coordinate_ascent_log_barrier} is
+$\cO\left( n_\text{iters} \cdot p^4 \right)$ when implemented naively.
+It is possible to implement a version running in $\cO\left( n_\text{iters} \cdot p^3 \right)$ steps instead.
+To see this, note $A = \tcove - \diag\bs \in \R^{p \times p}$.
+At each iteration $j$, $Q_j$ is a principal sub-matrix of $A$ and its inverse can efficiently be computed
+(in $\cO\left( p^2 \right)$ steps) from the one of $A$~\citep{submatrix_inverse}.
+On top of that, when a coordinate $s_j$ changes,
+$A$ is only modified with a rank-$1$ update.
+Its new inverse can efficiently be computed ($\cO\left( p^2 \right)$ steps)
+using for example Sherman-Morrison formula
+(see Appendix~\ref{ch:linear_algebra})
+or Cholesky rank-$1$ updates~\citep{cholesky_rank_1} which are more stable numerically.
+In Appendix~\ref{ch:cython_acceleration} we give an example of Cython implementation.
 \begin{algorithm}[t]
     \caption{Coordinate ascent with log-barrier}\label{alg:coordinate_ascent_log_barrier}
     \begin{algorithmic}[1]
@@ -347,17 +373,12 @@ i.e. $\bs \geq \0$ is of the form $L \leq \diag\bs \leq U$.
         \Repeat
         \For{$j = 1,\,\dots,\, p$}
         \State $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$
-        \State $s_j = \max\big( \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda,\, 0 \big)$
+        \State $s_j = \max\big( \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda,\, 0 \big)$\label{alg:line:q_inv}
         \EndFor
         \State $\lambda = \mu \cdot \lambda$
         \Until{stopping criteria}
     \end{algorithmic}
 \end{algorithm}
-
-The bottleneck of Algorithm~\ref{alg:coordinate_ascent_log_barrier} is the inversion of the matrix
-$Q_j \in \R^{(p - 1) \times (p - 1)}$ which takes $\cO\left( p^3 \right)$ steps.
-As it is done in every inner iteration, the algorithm's time complexity is
-$\cO\left( n_\text{iters} \cdot p^4 \right)$ when implemented naively.
 
 \section{Low-rank covariance approximation}\label{sec:low_rank_sigma}
 
@@ -367,37 +388,62 @@ On top of that,
 if $p$ is larger than $10\,000-20\,000$ it becomes challenging to solely store the covariance in the memory
 of a standard computer.
 Hopefully, big data matrices and especially correlation matrices often have an underlying low-rank structure,
-or at least can be approximated adequately by such a low-rank estimate~\cite{big_data_low_rank}.
-An intuitive explanation is that there is only a small number of latent features explaining most of the data.
+or at least can be approximated adequately by such a low-rank estimate~\citep{big_data_low_rank}.
+An intuitive explanation is that only a small number of latent features explain most of the data.
 
 \subsection{Factor model}\label{subsec:factor_model}
 
-We approximate the covariance $\cove$ with the following structure.
+We approximate the covariance $\cove$ with the following structure
 \begin{equation}\label{eq:low_rank_structure}
 \cove = D + U \Lambda U^\top
 \end{equation}
-where $U \in \R^{p \times k}$ satisfies $U^\top U = I_k$,
+where $U \in \R^{p \times k}$ has orthogonal columns ($U^\top U = I_k$),
 and both $D \in \R^{p \times p},\, \Lambda \in \R^{k \times k}$
 are diagonal and psd.
 $k$ is typically much lower than $p$ to save has much memory and computations as possible.
 
-If $X$ is reasonably large,
-we can consider an SVD decomposition $X = V \Lambda V$
+In the case where $X$ is reasonably large,
+the decomposition~\ref{eq:low_rank_structure} for the empirical covariance can be obtained as follows.
+First factorize $X = P \Delta Q^T$ with SVD~\citep{svd}.
+Then (assuming columns are centered),
+\begin{align*}
+    \cove &= \frac{1}{n}X^\top X\\
+    &= \frac{1}{n}Q \Delta^2 Q^\top
+\end{align*}
+From this, building a rank-$k$ approximation of $\cove$ is easily done by keeping its top $k$ eigenvalues,
+that is
+\begin{equation*}
+    \Lambda = \Delta^2_{:k,\, :k} \qquad\qquad U = Q_{:,\, :k}
+\end{equation*}
+Then set $D = \diag^2\max \big( \cove - U \Lambda U^\top,\, \0_{p \times p} \big)$
+to be the diagonal psd matrix containing
+the difference between $\cove$ and the low-rank approximation.
+None of these steps requires to form the full covariance matrix $\cove$, which might not fit in memory.
 
-Additionally, the empirical covariance estimator performs poorly in high dimension.
-Shrunk estimators like the one proposed by~\cite{ledoit_wolf} are proven to be superior in that situation.
-Suppose $\cove = \frac{1}{n}X^\top X$ is the empirical estimator.
+As pointed out earlier, the empirical covariance estimator performs poorly in high dimension.
+Shrunk estimators like the one proposed by~\cite{ledoit_wolf} are proven to be often superior in that situation.
+Suppose again that $\cove = \frac{1}{n}X^\top X$ is the empirical estimator.
 Note $\mu = \Tr( \cove ) / p$ and $\delta$ a shrinkage coefficient.
 The shrunk covariance estimator is then given by
 \begin{equation*}
     \cove_\delta = (1 - \delta)\cove + \delta\mu I
 \end{equation*}
-Finding the optimal coefficient $\delta$ can be done in $\cO\left( n^2 \cdot p \right)$ steps.
+The same decomposition strategy can be employed,
+but this time $\cove_\delta = Q\big[ (1 - \delta) \Delta^2 / n + \delta\mu I \big] Q^\top$.
+Finding the optimal coefficient $\delta$ can be done in $\cO\left( n \cdot p \right)$ steps
+and without extra memory, provided that we know the decomposition of $X$.
 
-Randomized SVD algorithms~\citep{random_svd} may be employed to speed-up the process,
-or to achieve alternating descent on $D$ and $U$.
+Randomized SVD algorithms~\citep{random_svd} may be employed
+in the case where computing the exact SVD decomposition of $X$ is too costly,
+when $X$ doesn't even fit in memory,
+or simply to speed-up the factorization process.
+Without the full SVD, computing the optimal shrinkage coefficient $\delta$ is more costly
+but can be done in $\cO\left( n^2 \cdot p \right)$ steps and without extra memory.
+Rather than simply computing a low-rank approximation $U \Lambda U^\top$ and then $D$,
+it is possible to achieve alternating descent on $U$ and $D$ without constructing $\cove$ with these randomized
+estimations.
+Nonetheless, one single step seems to be often very close to a local minimum.
 We implement such algorithms and show that they scale moderately well with $n$ and $p$.
-One single step is often enough.
 
 \bigbreak
 In the following sections,
@@ -496,9 +542,21 @@ a function of $p$ and $k$.
 
 \subsection{Efficient low-rank sampling}\label{subsec:low_rank_sampling}
 
-In this section, we detail briefly how to sample $\zz \sim \cN\left( \bupsilon,\, \Upsilon \right)$ once
-a feasible $\bs$ is computed, and in the special case where $\cove = D + U\Lambda U^\top$.
-A classical approach to sample from a multivariate normal distribution is to sample first a vector
+In this section, we detail briefly how to sample knockoffs $\tcX$ once
+a feasible solution $\bs$ is computed,
+and in the special case where $\cove = D + U\Lambda U^\top$.
+Recall that $\tcX$ is sampled from the following conditional distribution
+\begin{equation}\label{eq:conditional_gaussian_knockoffs3}
+    \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
+    ,\qquad\text{where}\quad
+    \begin{cases*}
+        \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
+        \Upsilon = \diag(\bs)\left( 2I_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+    \end{cases*}
+\end{equation}
+A classical approach to sample
+$\zz \sim \cN\left( \bupsilon,\, \Upsilon \right)$
+from a multivariate normal distribution is to sample first a vector
 $\tilde{\zz} \in \R^p$ from $\cN\left( 0,\, 1 \right)$,
 and then pose $\zz = \bupsilon + L\tilde{\zz}$,
 where $L$ is a lower Cholesky factorization of $\Upsilon$.
@@ -508,8 +566,9 @@ then
     A\xx + \bb \sim \cN\big( A\bmu + \bb,\, A\Sigma A^\top \big)
 \end{equation}
 Note that this scheme works even if $L$ is not lower-triangular,
-but only satisfies $LL^\top = \Upsilon$.
+but simply satisfies $LL^\top = \Upsilon$.
 
+\bigbreak
 As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
 nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
 We show here how to factorize $\Upsilon$ in a cheap way,
@@ -558,6 +617,5 @@ instead only $W$ and $P$ can be stored and matrix multiplications are then at mo
 $M$ is a complex matrix so we cannot directly use the property~\ref{eq:affine_transformation}.
 But if $\cX \sim \cN(\0,\, I)$ and $\cY = i\cX$,
 then $\operatorname{Im}\left( M\cY \right) \sim \cN(\0,\, MM^\top = \Upsilon)$.
-Using this scheme, with $p = 15\,000$ and $k = 100$ we can draw $n = 5\,000$ samples in $\approx 4$ seconds,
-while the naive method not taking into account the low rank approximation would need $\approx 180$ seconds.
-In comparison sampling $5000 \times 15\,000$ numbers from $\cN(0, 1)$ takes $\approx 2$ seconds.
+Using this scheme, we can draw dozens of thousands knockoff samples in a few seconds without explicitely
+building $\cove$ nor $\Upsilon$.
