@@ -21,7 +21,7 @@ be it a numerical or a categorical variable.
 The notion of relevance of a feature $\cX_j$ can be captured by the dependence of $\cY$ on $\cX_j$.
 To do so, suppose that the joint vector $\left( \cX,\, \cY \right)$ follows some distribution,
 that is $\left( \cX,\, \cY \right) \sim \mathcal{P}_{\cX,\, \cY}$.
-Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope,
+Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope in general,
 one may be interested in finding on which subset $\cS$ of features $\cP_{\cY \mid \cX}$ depends.
 Such a subset is not necessarily unique
 \begin{figure}[h]
@@ -46,8 +46,12 @@ $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
 The goal is thus to find a procedure selection a subset of features
 $\hat{\cS} \subseteq \fset$.
 
-In the case of linear regression,
-where we assume that there
+In the case of linear regression where we assume that the target and the features follow a linear relationship
+\begin{equation*}
+    \cY = \cX^\top \bbeta \epsilon
+\end{equation*}
+where $\epsilon$ is a gaussian noise,
+feature selection would consist in identifying which coefficients of $\bbeta$ are non null.
 
 In practice, one would observe several independent realizations of
 $\left( \cX,\, \cY \right)$ and would aggregate them into a feature matrix
@@ -56,21 +60,22 @@ The independence of the observations is a credible assumption in many real life 
 
 \subsection{Motivation}\label{subsec:fs_motivation}
 
-Feature selection may be used in a multitude of contexts and we point out here the main reasons why
-one would want to perform it on a dataset.
+Feature selection may be used in a multitude of contexts and we point out here the main benefits of
+performing it on a dataset.
 \begin{enumerate}
-    \item Making the model more interpretable.
+    \item \textit{Making the model more interpretable.}
     It gives insights on the most relevant features to explain the observed target.
-    \item Facilitating data visualization.
-    As only a small subset of the features is selected,
+    It is for instance decisive when you are interested in the role of genes.
+    \item \textit{Facilitating data visualization.}
+    When only a small subset of the features is selected,
     projecting it to a low (2 or 3) dimensional space is easier.
-    \item Reducing the training time.
+    \item \textit{Reducing the training time.}
     Many machine learning algorithm have a super-linear time complexity in the number of features.
-    Pre-selecting a small subsets of those with a cheaper method can noticeably as less\cite{high_dimensional_fs}
-    \item Improving the generalization of machine learning models.
+    Pre-selecting a small subset with a cheaper method can noticeably as less\citep{high_dimensional_fs}.
+    \item \textit{Improving the generalization of machine learning models.}
     Irrelevant features may only be noise and fitting a model against them at train time
     is prone to over-fitting noise.
-    \item Avoiding the curse of dimensionality~\citep{curse_dimensionality}.
+    \item \texit{Avoiding the curse of dimensionality}~\citep{curse_dimensionality}.
     For example, the $k$-nearest neighbors algorithms~\citep{knn} is known to perform badly as the feature space
     dimension increases.
     The number of samples actually has to grow exponentially in the number of features in order for the algorithm

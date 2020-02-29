@@ -1,17 +1,18 @@
 \chapter{The knockoffs filter framework}\label{ch:knockoffs}
 
-In 2015 Barber-Candès introduced the knockoffs framework and extended it later in 2018 to a more general setting
+Recently~\cite{fixed_x_knockoffs} introduced the knockoffs framework and extended it later in 2018 to a more general setting
 (allowing in particular to perform feature selection in the high dimension context).
-The goal is to control the false discovery rate as defined in Section~\ref{sec:fdrc}, while maintaining a reasonable power.
+The goal is to control the false discovery rate as defined in Section~\ref{sec:fdrc},
+while maintaining a reasonable power.
 More formally, let $X \in \R^{n \times p}$ be a a feature matrix and $\yy \in \R^n$ the associated target vector.
 Suppose $\yy$ depends only on the subset of features $\cS \subseteq \fset$.
 Given some $\fdr$ target $\fdrtarget \in [0, 1]$, we wish to find a procedure such as, in average,
 the false discovery proportion is smaller that $\fdrtarget$, i.e. $\fdr \leq q$.
 To do so, the key idea is to construct for each original feature $X_j$, $j \in \fset$,
-a knockoff (that is to say, fake) feature $\tilde{X}_j$ which is known to be out of the model.
+a knockoff (that is to say, fake) feature $\tX_j$ which is known to be out of the model.
 Original features are then selected only if they prove to be more significant than their knockoff counterparts.
 
-To compare a feature and its knockoff several quantities will be computed by interchanging them.
+To compare a feature and its knockoff several quantities will be computed by interchanging matrix columns.
 For this reason, we define the $\swap$ operator.
 \begin{definition}\label{def:swap}
     \text{($\swap$ operator)}
