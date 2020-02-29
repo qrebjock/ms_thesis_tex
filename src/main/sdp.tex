@@ -1,6 +1,6 @@
 \chapter{Efficient knockoffs construction}\label{ch:sdp}
 
-As shown in Chapter~\ref{ch:fs}, in the case of gaussian knockoffs,
+As shown in Chapter~\ref{ch:knockoffs}, in the case of gaussian knockoffs,
 $\tX$ can be sampled from a normal distribution $\cN\left( \bupsilon,\, \Upsilon \right)$ whose parameters
 $\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs2}.
 \begin{equation}\label{eq:conditional_gaussian_knockoffs2}
@@ -138,7 +138,7 @@ Solve the one dimensional maximization
 Finally, pick $\bs = \gamma \cdot \hat{\bs}$.
 \begin{remark}
     Note that the two extreme options $\coveapprox = I$ and $\coveapprox = \cove$ yield
-    the same solutions as solving equi-knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
+    the same solutions as solving equi-correlated knockoffs~\ref{eq:equi} and full SDP knockoffs~\ref{eq:sdp} respectively.
 \end{remark}
 Solving~\ref{eq:sdp_approx_1d} in Step 2 can be done very efficiently using bisection as it is a one-dimensional SDP\@.
 The optimization problem~\ref{eq:sdp_approx} is the same as the one in~\ref{eq:sdp},
@@ -231,7 +231,7 @@ For any $j \in \fset$, M is psd if and only if both conditions in~\ref{eq:psd_sc
 
 \subsection{Coordinate ascent}\label{subsec:coordinate_ascent}
 
-Using characterization~\ref{eq:psd_schur_permutation},
+Using the characterization~\ref{eq:psd_schur_permutation},
 it appears that the feasibility of $\bs$ in SDP~\ref{eq:sdp} is equivalent to the three following conditions,
 for any $j \in \fset$
 \begin{equation}\label{eq:schur_sdp_constraints}
@@ -269,7 +269,7 @@ A slight modification depicted in the next section will correct that.
 
 Instead of optimizing~\ref{eq:sdp},
 we absorb the constraint $\tcove \succeq \bs$ into the objective by penalizing solutions
-too close to the feasibility frontier, as described in §11.3 by~\cite{convex_optimization}.
+too close to the feasibility frontier, as described by~\citet[§11.3]{convex_optimization}.
 It depends on the additional term
 $\lambda \cdot \log\det\big( \tcove - \diag\bs \big)$
 for some coefficient $\lambda > 0$:
@@ -278,7 +278,7 @@ for some coefficient $\lambda > 0$:
     \sum_{j = 1}^p s_j
     + \lambda \cdot \log\det\big( \tcove - \diag\bs \big)
     \qquad
-    \text{subject to }
+    \text{subject to}\quad
     s_j \geq 0\text{ for all } j
 \end{equation}
 where we consider that $\log 0 = -\infty$.
@@ -286,7 +286,7 @@ Intuitively, a solution $\bs$ such that the minimum eigenvalue of $\tcove - \dia
 will be penalized by this $\log$ term.
 
 \bigbreak
-The following lemma will be helpful to compute the $\log$ term.
+The following lemma will be helpful to compute the determinant.
 \begin{lemma}
     If $M = \begin{bmatrix}
         \xi & \yy^\top\\
@@ -299,8 +299,8 @@ The following lemma will be helpful to compute the $\log$ term.
     \end{align*}
 \end{lemma}
 \begin{proof}
-    It is an immediate consequence of the formula for the determinant of a block matrix
-    given in Appendix~\ref{sec:block_matrix_det}.
+    It is an immediate consequence of the formula giving the determinant of a block matrix
+    reported in Appendix~\ref{sec:block_matrix_det}.
 \end{proof}
 With subscript notations, this identity can be noted as
 $\det\left( M \right) = \big( M_{1,\, 1} - M_{1^c,\, 1}^\top M_{1^c,\, 1^c}^{-1} M_{1^c,\, 1} \big)
@@ -313,13 +313,12 @@ it can further be generalized to
 \end{equation*}
 for any $j \in \fset$.
 By applying this to $\log\det\big( \tcove - \diag\bs \big)$,
-we get that
+we get that for any $j$,
 \begin{equation*}
     \log\det\big( \tcove - \diag\bs \big) =
         \log\big( \tcove_{j,\, j} - s_j - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} \big)
             + \log\det\left( Q_j \right)
 \end{equation*}
-for any $j \in \fset$,
 where $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$ does not depend on $s_j$.
 
 \bigbreak
@@ -339,13 +338,13 @@ The $j$th coordinate is therefore updated as $s_j \leftarrow \max\left( \alpha^\
 Note in particular that this update maintains the feasibility
 conditions~\ref{eq:sdp_simple_constraints} for any value of $\lambda$.
 
-Section §11.3 of~\cite{convex_optimization} suggests that picking $\lambda = \epsilon / p$ will yield an
+\citet[§11.3]{convex_optimization} suggest that picking $\lambda = \epsilon / p$ will yield an
 $\epsilon$-optimal solution.
 In practice, an initial $\lambda_0$ is picked and it is multiplied by a decay rate
 $0 < \mu < 1$ after each coordinate cycle to refine the solution.
 This scheme can be proven to converge to the maximum
 of the modified objective~\ref{eq:sdp_log_barrier}.
-It is indeed a particular case of Theorem~3 by~\cite{block_coordinate_sdp},
+It is indeed a particular case of ~\citet[Theorem~3]{block_coordinate_sdp},
 which applies in this case as the constraints are simple,
 i.e. $\bs \geq \0$ is of the form $L \leq \diag\bs \leq U$.
 
@@ -355,7 +354,7 @@ The bottleneck is the inversion of the matrix
 $Q_j \in \R^{(p - 1) \times (p - 1)}$ in line~\ref{alg:line:q_inv} which takes $\cO\left( p^3 \right)$ steps.
 As it is done in every inner iteration, the time complexity of Algorithm~\ref{alg:coordinate_ascent_log_barrier} is
 $\cO\left( n_\text{iters} \cdot p^4 \right)$ when implemented naively.
-It is possible to implement a version running in $\cO\left( n_\text{iters} \cdot p^3 \right)$ steps instead.
+It is possible to design a version running in $\cO\left( n_\text{iters} \cdot p^3 \right)$ steps instead.
 To see this, note $A = \tcove - \diag\bs \in \R^{p \times p}$.
 At each iteration $j$, $Q_j$ is a principal sub-matrix of $A$ and its inverse can efficiently be computed
 (in $\cO\left( p^2 \right)$ steps) from the one of $A$~\citep{submatrix_inverse}.
@@ -365,7 +364,7 @@ Its new inverse can efficiently be computed ($\cO\left( p^2 \right)$ steps)
 using for example Sherman-Morrison formula
 (see Appendix~\ref{ch:linear_algebra})
 or Cholesky rank-$1$ updates~\citep{cholesky_rank_1} which are more stable numerically.
-In Appendix~\ref{ch:cython_acceleration} we give an example of Cython implementation.
+In Appendix~\ref{ch:cython_acceleration} we give a Cython implementation example.
 \begin{algorithm}[t]
     \caption{Coordinate ascent with log-barrier}\label{alg:coordinate_ascent_log_barrier}
     \begin{algorithmic}[1]
@@ -386,7 +385,7 @@ In Appendix~\ref{ch:cython_acceleration} we give an example of Cython implementa
 Covariance estimation in the high-dimensional setting ($p > n$ where $n$ is the number of samples)
 is challenging as the sample (empirical) covariance is not accurate.
 On top of that,
-if $p$ is larger than $10\,000-20\,000$ it becomes challenging to solely store the covariance in the memory
+if $p$ is larger than $20\,000$ it becomes challenging to solely store the full matrix in the memory
 of a standard computer.
 Hopefully, big data matrices and especially correlation matrices often have an underlying low-rank structure,
 or at least can be approximated adequately by such a low-rank estimate~\citep{big_data_low_rank}.
@@ -396,7 +395,7 @@ An intuitive explanation is that only a small number of latent features explain 
 
 We approximate the covariance $\cove$ with the following structure
 \begin{equation}\label{eq:low_rank_structure}
-\cove = D + U \Lambda U^\top
+    \cove = D + U \Lambda U^\top
 \end{equation}
 where $U \in \R^{p \times k}$ has orthogonal columns ($U^\top U = I_k$),
 and both $D \in \R^{p \times p},\, \Lambda \in \R^{k \times k}$
@@ -441,8 +440,7 @@ or simply to speed-up the factorization process.
 Without the full SVD, computing the optimal shrinkage coefficient $\delta$ is more costly
 but can be done in $\cO\left( n^2 \cdot p \right)$ steps and without extra memory.
 Rather than simply computing a low-rank approximation $U \Lambda U^\top$ and then $D$,
-it is possible to achieve alternating descent on $U$ and $D$ without constructing $\cove$ with these randomized
-estimations.
+these randomized estimations allow to achieve alternating descent on $U$ and $D$ without constructing $\cove$.
 Nonetheless, one single step seems to be often very close to a local minimum.
 We implement such algorithms and show that they scale moderately well with $n$ and $p$.
 
@@ -458,49 +456,73 @@ this approximating structure is general enough to yield satisfying results.
 The complexity of Algorithm~\ref{alg:coordinate_ascent_log_barrier} can be drastically reduced
 to $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$
 by taking advantage of the special structure of $\cove$.
+Remember that at each iteration $j$,
+only the coordinate $j$ of $\bs$ is updated
+\begin{equation*}
+    s_j \leftarrow \max(\alpha^\star,\, 0)
+    \quad\text{with}\quad
+    \alpha^\star = \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda
+\end{equation*}
+where $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$.
 Note $V = U \sqrt{\Lambda}$ so that $\cove = D + VV^\top$.
-Then,
+Then we get that,
+\begin{equation*}
+    Q_j = 2D_{j^c,\, j^c} - \diag\bs_{j^c} + 2V_{j^c,\, :}V_{j^c,\, :}^\top
+\end{equation*}
+where the subscript `:` denotes that all columns (or rows) are kept.
+By writing $F_j = 2D_{j^c,\, j^c} - \diag\bs_{j^c}$ and $A_j = V_{j^c,\, :}^\top F_j^{-1} V_{j^c,\, :}$,
+the Woodbury formula (see Appendix~\ref{sec:sherman}) gives that
 \begin{align*}
-    Q_j &= \tcove_{j^c,\, j^c} - \diag\bs_{j^c}\\
-    &= 2D_{j^c} - \diag\bs_{j^c} + 2V_{j^c,\, :}V_{j^c,\, :}^\top
+    Q_j^{-1} &=
+        F_j^{-1} - 2F_j^{-1}V_{j^c,\, :}
+            \big( I_k + 2V_{j^c,\, :}^\top F_j^{-1} V_{j^c,\, :} \big)^{-1}
+                V_{j^c,\, :}^\top F_j^{-1}\\
+    &= F_j^{-1} - 2F_j^{-1}V_{j^c,\, :}
+        \big( I_k + 2A_j \big)^{-1}
+            V_{j^c,\, :}^\top F_j^{-1}
 \end{align*}
-By noting $F = 2D_{j^c} - \diag\bs_{j^c}$ and using the Woodbury formula,
-\begin{equation*}
-    Q_j^{-1} =
-        F^{-1} - 2F^{-1}V_{j^c,\, :}
-            \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}
-                V_{j^c,\, :}^\top F^{-1}
-\end{equation*}
-It gives that in the inner loop, $s_j$ has to be updated with the quantity
-$\max\left( \alpha^\star,\, 0 \right)$ where
-\begin{equation*}
-    \alpha^\star =
-        \underbrace{
-            \tcove_{j,\, j}
-            - 4\cove_{j^c,\, j}^\top F^{-1} \cove_{j^c,\, j}
-            - \lambda
-        }_\text{$(*)$}
-        + \underbrace{
-            8\cove_{j^c,\, j}^\top F^{-1} V_{j^c,\, :}
-            \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}
-            V_{j^c,\, :}^\top F^{-1}\cove_{j^c,\, j}
-        }_\text{$(**)$}\\
-\end{equation*}
-The term $(*)$ can easily be evaluated,
-but computing $Q_j$ and its inverse in every inner loop would cost $\cO\left( k^3 \right)$ steps
-because of the inversion of the $k \times k$ matrix
-$M_j = \big( I_k + V_{j^c,\, :}^\top F^{-1} V_{j^c,\, :} \big)^{-1}$
-in the term $(**)$.
-It can be reduced to $\cO\left( k^2 \right)$ using Sherman–Morrison rank-1 updates or,
-for a better numerical stability,
-$LDL^\top$ Cholesky rank-1 updates.
-To see this, note $A$ the matrix
-\begin{equation*}
-    A = I_k + V^\top F^{-1} V
-\end{equation*}
-(which depends on $\bs$ as $F$ does).
-Then it can be observed that $M_j = A - F_{j,\, j} V_{j,\, :}V_{j,\, :}^\top$,
-so its inverse can simply be computed with a rank-1 update of the one of $A$.
+Using this, the inner-loop update $\alpha^\star$ can be written as
+\begin{align}\label{eq:low_rank_alpha}
+    \alpha^\star &=
+        \tcove_{j,\, j}
+        - 4\cove_{j^c,\, j}^\top F_j^{-1} \cove_{j^c,\, j}
+        - \lambda
+        + 8\cove_{j^c,\, j}^\top F_j^{-1} V_{j^c,\, :}
+        \big( I_k + 2A_j \big)^{-1}
+        V_{j^c,\, :}^\top F_j^{-1}\cove_{j^c,\, j}\nonumber\\[5pt]
+    &= \underbrace{
+        \tcove_{j,\, j}
+        - 4V_{j,\, :}^\top A_j V_{j,\, :}
+        - \lambda
+    }_\text{$(*)$}
+    + \underbrace{8V_{j,\, :}^\top A_j
+        \big( I_k + 2A_j \big)^{-1}
+        A_j V_{j,\, :}
+    }_\text{$(**)$}
+\end{align}
+where we used the fact that
+$\cove_{j^c,\, j} = D_{j^c,\, j} + V_{j^c,\, :}V_{j,\, :} = V_{j^c,\, :}V_{j,\, :}$.
+
+Forming the matrix $A_j$ at each iteration would be very costly.
+But if we note $F = 2D - \diag\bs$ and $A = V^\top F^{-1} V$,
+it appears that $A_j$ is a rank-1 update of $A$
+\begin{align*}
+    A_j &= V_{j^c,\, :}^\top F_j^{-1} V_{j^c,\, :}\\
+    &= A - F_{j,\, j} \cdot V_{j,\, :}V_{j,\, :}^\top
+\end{align*}
+Therefore, we can simply build $A$ at the beginning and update it efficiently to make $A_j$.
+Using this, the term $(*)$ in~\ref{eq:low_rank_alpha} can be easily evaluated in $\cO\left( k^2 \right)$ steps.
+The term $(**)$ involves the computation of the inverse of $B_j = I_k + 2A_j$.
+But again, $B_j$ is a rank-1 update of $B = I_k + 2A$,
+which can be computed once
+and updated with Sherman-Morrison (Appendix~\ref{ch:linear_algebra})
+or Cholesky rank-$1$ updates~\citep{cholesky_rank_1}.
+Finally, when $s_j$ is updated, the coordinate $(j,\, j)$ of $F$ is updated,
+which induces a rank-1 update of $A$.
+All these operations can be done in $\cO\left( k^2 \right)$ steps.
+The matrix $F$ being diagonal,
+it requires only $p$ floats to store it and its inversion is trivial.
+
 \begin{algorithm}
     \caption{Low-rank coordinate ascent}\label{alg:low_rank_coordinate_ascent}
     \begin{algorithmic}[1]
@@ -509,12 +531,12 @@ so its inverse can simply be computed with a rank-1 update of the one of $A$.
         \State $\bs = \bs^{(0)}$
         \State $V = U \sqrt{\Lambda}$
         \State $F = 2D - \diag\bs$
-        \State $A = I_k + V^\top F^{-1} V$
+        \State $A = V^\top F^{-1} V$
         \Repeat
         \For{$j = 1,\,\dots,\, p$}
-        \State $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$
-        \State $z = \tcove_{j,\, j} - 4\cove_{j^c,\, j}^\top Q_j^{-1} \cove_{j^c,\, j} - \lambda$
-        \State $s_j = \max\left( z,\, 0 \right)$
+        \State $A_j = A - F_{j,\, j} \cdot V_{j,\, :}V_{j,\, :}^\top$
+        \State $\alpha^\star = \tcove_{j,\, j} - 4V_{j,\, :}^\top A_j V_{j,\, :} - \lambda + 8V_{j,\, :}^\top A_j \big( I_k + 2A_j \big)^{-1} A_j V_{j,\, :}$
+        \State $s_j = \max\left( \alpha^\star,\, 0 \right)$
         \EndFor
         \State $\lambda = \mu \cdot \lambda$
         \Until{stopping criteria}
@@ -535,11 +557,20 @@ so its inverse can simply be computed with a rank-1 update of the one of $A$.
 \end{figure}
 
 This scheme is summarized in Algorithm~\ref{alg:low_rank_coordinate_ascent}.
-It uses at most $\cO\left( p \cdot k \right)$ memory ($F$ never has to be fully computed as it's a diagonal)
+It uses at most $\cO\left( p \cdot k \right)$ memory
 and the time complexity is $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$, as stated above.
-However, numerical instabilities led us to perform some experiments in $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
-Figure~\ref{fig:low_rank_times} shows the convergence time for Algorithm~\ref{alg:low_rank_coordinate_ascent} as
-a function of $p$ and $k$.
+We make a Cython implementation which is available in the released Python package.
+Because of numerical instabilities, we completed experiments with a version inverting the matrix
+$I_k + 2A_j$ at each iteration, leading to a higher time complexity of
+$\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
+Figure~\ref{fig:low_rank_times} shows the convergence times obtained in these experiments,
+as a function of $p$ and $k$.
+It demonstrates that the scalability is much better than with SCS,
+thanks to the low-rank approximation and the fact that coordinate descent
+is particularly well-suited to this optimization problem.
+Even with $100\,000$ features, the convergence could be obtained in a few minutes.
+We hope to prevent numerical instabilities in future versions and attain the
+$\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$ time complexity.
 
 \subsection{Efficient low-rank sampling}\label{subsec:low_rank_sampling}
 
