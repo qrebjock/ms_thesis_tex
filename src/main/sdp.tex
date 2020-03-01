@@ -7,8 +7,8 @@ $\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs
     \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
     ,\qquad\text{where}\quad
     \begin{cases*}
-        \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
-        \Upsilon = \diag(\bs)\left( 2I_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+        \bupsilon = \cX - \cX\Sigma^{-1}\diag\{ \bs \}\\
+        \Upsilon = \diag\{ \bs \}\left( 2I_{p \times p} - \Sigma^{-1}\diag\{ \bs \} \right)
     \end{cases*}
 \end{equation}
 More generally, the same parameters are derived by only imposing
@@ -465,7 +465,7 @@ only the coordinate $j$ of $\bs$ is updated
 \end{equation*}
 where $Q_j = \tcove_{j^c,\, j^c} - \diag\bs_{j^c}$.
 Note $V = U \sqrt{\Lambda}$ so that $\cove = D + VV^\top$.
-Then we get that,
+Then we get that
 \begin{equation*}
     Q_j = 2D_{j^c,\, j^c} - \diag\bs_{j^c} + 2V_{j^c,\, :}V_{j^c,\, :}^\top
 \end{equation*}
@@ -492,23 +492,23 @@ Using this, the inner-loop update $\alpha^\star$ can be written as
         V_{j^c,\, :}^\top F_j^{-1}\cove_{j^c,\, j}\nonumber\\[5pt]
     &= \underbrace{
         \tcove_{j,\, j}
-        - 4V_{j,\, :}^\top A_j V_{j,\, :}
+        - 4V_{j,\, :} A_j V_{j,\, :}^\top
         - \lambda
     }_\text{$(*)$}
-    + \underbrace{8V_{j,\, :}^\top A_j
+    + \underbrace{8V_{j,\, :} A_j
         \big( I_k + 2A_j \big)^{-1}
-        A_j V_{j,\, :}
+        A_j V_{j,\, :}^\top
     }_\text{$(**)$}
 \end{align}
 where we used the fact that
-$\cove_{j^c,\, j} = D_{j^c,\, j} + V_{j^c,\, :}V_{j,\, :} = V_{j^c,\, :}V_{j,\, :}$.
+$\cove_{j^c,\, j} = D_{j^c,\, j} + V_{j^c,\, :}V_{j,\, :}^\top = V_{j^c,\, :}V_{j,\, :}^\top$.
 
 Forming the matrix $A_j$ at each iteration would be very costly.
 But if we note $F = 2D - \diag\bs$ and $A = V^\top F^{-1} V$,
 it appears that $A_j$ is a rank-1 update of $A$
 \begin{align*}
     A_j &= V_{j^c,\, :}^\top F_j^{-1} V_{j^c,\, :}\\
-    &= A - F_{j,\, j} \cdot V_{j,\, :}V_{j,\, :}^\top
+    &= A - F_{j,\, j} \cdot V_{j,\, :}^\top V_{j,\, :}
 \end{align*}
 Therefore, we can simply build $A$ at the beginning and update it efficiently to make $A_j$.
 Using this, the term $(*)$ in~\ref{eq:low_rank_alpha} can be easily evaluated in $\cO\left( k^2 \right)$ steps.
@@ -517,7 +517,7 @@ But again, $B_j$ is a rank-1 update of $B = I_k + 2A$,
 which can be computed once
 and updated with Sherman-Morrison (Appendix~\ref{ch:linear_algebra})
 or Cholesky rank-$1$ updates~\citep{cholesky_rank_1}.
-Finally, when $s_j$ is updated, the coordinate $(j,\, j)$ of $F$ is updated,
+Finally, when $s_j$ is updated, the coordinate $(j,\, j)$ of $F$ is changed,
 which induces a rank-1 update of $A$.
 All these operations can be done in $\cO\left( k^2 \right)$ steps.
 The matrix $F$ being diagonal,
@@ -530,11 +530,10 @@ it requires only $p$ floats to store it and its inversion is trivial.
             decay $\mu$, $\bs^{(0)} = \0_p$
         \State $\bs = \bs^{(0)}$
         \State $V = U \sqrt{\Lambda}$
-        \State $F = 2D - \diag\bs$
-        \State $A = V^\top F^{-1} V$
         \Repeat
         \For{$j = 1,\,\dots,\, p$}
-        \State $A_j = A - F_{j,\, j} \cdot V_{j,\, :}V_{j,\, :}^\top$
+        \State $F_j = 2D_{j^c,\, j^c} - \diag\bs_{j^c}$
+        \State $A_j = V_{j^c,\, :}^\top F_j^{-1} V_{j^c,\, :}$
         \State $\alpha^\star = \tcove_{j,\, j} - 4V_{j,\, :}^\top A_j V_{j,\, :} - \lambda + 8V_{j,\, :}^\top A_j \big( I_k + 2A_j \big)^{-1} A_j V_{j,\, :}$
         \State $s_j = \max\left( \alpha^\star,\, 0 \right)$
         \EndFor
@@ -577,13 +576,14 @@ $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$ time complexity.
 In this section, we detail briefly how to sample knockoffs $\tcX$ once
 a feasible solution $\bs$ is computed,
 and in the special case where $\cove = D + U\Lambda U^\top$.
-Recall that $\tcX$ is sampled from the following conditional distribution
+As shown in Section~\ref{subsec:gaussian_knockoffs},
+$\tcX$ is sampled from the following conditional distribution
 \begin{equation}\label{eq:conditional_gaussian_knockoffs3}
     \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
     ,\qquad\text{where}\quad
     \begin{cases*}
-        \bupsilon = \cX - \cX\Sigma^{-1}\diag(\bs)\\
-        \Upsilon = \diag(\bs)\left( 2I_{p \times p} - \Sigma^{-1}\diag(\bs) \right)
+        \bupsilon = \cX - \cX\Sigma^{-1}\diag\{ \bs \}\\
+        \Upsilon = \diag\{ \bs \}\left( 2I_{p \times p} - \Sigma^{-1}\diag\{ \bs \} \right)
     \end{cases*}
 \end{equation}
 A classical approach to sample
@@ -605,9 +605,9 @@ As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
 nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
 We show here how to factorize $\Upsilon$ in a cheap way,
 requiring only $\cO\left( k \cdot p \right)$ memory and $\cO\left( k\cdot p^2 \right)$ operations.
-As shown in Section~\ref{subsec:gaussian_knockoffs}, $\Upsilon = 2S - S\cove^{-1}S$ where we note $S = \diag\bs$.
+We note $S = \diag\bs$, so that$\Upsilon = 2S - S\cove^{-1}S$.
 Using the low-rank structure $\cove = D + U\Lambda U^\top$,
-the Sherman–Morrison–Woodbury formula (see Appendix~\ref{sec:sherman}) gives
+the Woodbury formula (see Appendix~\ref{sec:sherman}) gives
 \begin{align*}
     \cove^{-1} &= (D + UU^\top)^{-1}\\
     &= D^{-1} - D^{-1}U(I_k + U^\top D^{-1}U)^{-1}U^\top D^{-1}
