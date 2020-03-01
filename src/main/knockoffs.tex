@@ -4,7 +4,7 @@ Recently~\cite{fixed_x_knockoffs} introduced the knockoffs framework to perform 
 The goal is to control the false discovery rate as defined in Section~\ref{sec:fdrc},
 that is, maintaining it under some threshold
 (while maximizing the power as much as possible).
-More formally, let $X \in \R^{n \times p}$ be a a feature matrix and $\yy \in \R^n$ the associated target vector.
+More formally, let $X \in \R^{n \times p}$ be a feature matrix and $\yy \in \R^n$ the associated target vector.
 Suppose $\yy$ depends only on the subset of features $\cS \subseteq \fset$.
 Given some $\fdr$ target $\fdrtarget \in [0, 1]$, we wish to find a procedure such as, in average,
 the false discovery proportion is smaller that $\fdrtarget$, i.e. $\fdr \leq q$.
@@ -45,7 +45,7 @@ which is a hard problem in general.
 We will focus on the construction of \textit{model}-X knockoffs as we are principally interested in the
 high dimensional setting.
 
-In this section, let $(\cX, \cY)$ be a pair of random variables,
+In this section, let $(\cX,\, \cY)$ be a pair of random variables,
 $\cX$ being composed of $p$ features,
 and $\cY$ the associated target in $\R$.
 We suppose that the feature matrix and the target vector $(X,\, \yy)$ are composed of samples from $(\cX,\, \cY)$.
@@ -104,7 +104,7 @@ In the particular case where $\cX$ is multivariate gaussian, the exact distribut
     Suppose that $\cX \sim \cN(\bmu,\, \Sigma)$.
     If $\tcX$ is a random variable such that
     \begin{equation*}
-        \big[ \cX; \tcX \big] \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix},\, \Omega\bigg)
+        \begin{bmatrix} \cX\\ \tcX \end{bmatrix} \sim \cN\bigg(\begin{bmatrix} \bmu\\ \bmu \end{bmatrix},\, \Omega\bigg)
         ,\quad\text{where }\quad
         \Omega = \begin{bmatrix}
             \Sigma & \Sigma - \diag \bs\\
@@ -113,7 +113,7 @@ In the particular case where $\cX$ is multivariate gaussian, the exact distribut
         \quad\text{for some }
         \bs \in \R^p,
     \end{equation*}
-    then $\big[\cX, \tcX \big]$ satisfies the $\swap$ property~\ref{itm:cond_swap},
+    then $\big[\cX; \tcX \big]$ satisfies the $\swap$ property~\ref{itm:cond_swap},
     provided that $\Omega$ is positive semidefinite (so that it is indeed a covariance matrix).
 \end{proposition}
 In Proposition~\ref{prop:gaussian_knockoffs},
@@ -144,7 +144,7 @@ Because of this instability,
 several people attempted to aggregate knockoffs
 and reduce the variance in the selection~\citep{improve_stability_knockoffs, aggregation_knockoffs, aggregated_fdr}.
 Depending on the available computing power,
-several algorithms may be used to estimate the covariance matrix $\Sigma$.
+various algorithms may be used to estimate the covariance matrix $\Sigma$.
 The empirical estimator is cheap but known to be imprecise when $p > n$.
 Shrunk estimators like the one proposed by~\cite{ledoit_wolf} provide better results in high dimension.
 
@@ -208,7 +208,7 @@ The idea is to build statistics for each original and each knockoff feature, and
 \end{enumerate}
 It is easy to show that such constructed statistics will satisfy the \emph{flip-sign} property~\ref{def:flip_sign}.
 
-Basically any antisymmetric function $a_j$ could work, but some choices experimentally lead to a better power.
+Basically any antisymmetric function $a_j$ could work, but some choices lead to a better power experimentally.
 Here are a few examples of mappings:
 \begin{itemize}
     \item $w_j = z_j - \tilde{z}_j$ (experimentally gives highest power in many cases)
@@ -238,7 +238,7 @@ all the coefficients are null starting from $\lambda = +\infty$,
 and are likely to shift (and to grow in absolute value) as $\lambda \to 0$.
 It makes sense to use the first point where the coefficient $\beta_j$ becomes non-null
 as a significance metric for each individual feature $j$.
-In addition, the LARS algorithms is able to compute that value pretty efficiently~\citep{lars_complexity}.
+In addition, the algorithm LARS is able to compute that value pretty efficiently~\citep{lars_complexity}.
 
 Another possibility proposed by~\cite{model_x_knockoffs} is to train a plain Lasso estimator.
 Here again, the LARS algorithm allows to cross-validate the value $\lambda$ efficiently.
@@ -247,25 +247,25 @@ Experimentally, these statistics often give remarkable results in terms of power
 More generally, the coefficients in absolute value of any reasonable regressor
 (or classifier, depending on the task) constitute a judicious option of statistics.
 The fact that the \emph{flip-sign} property isn't restrictive makes the knockoff framework very robust.
-Depending on the data, an adapted model can be trained be it logistic regression,
+An adapted model can be trained depending on the data, be it logistic regression,
 SVMs, or random forests~\cite{random_forests}.
 When the model has hyper-parameters, those are typically tuned using cross-validation.
 
 \section{Selection thresholds}\label{sec:kfs}
 
 The selection itself requires the computation of a data-dependent threshold $\tau$
-conditioned by the target FDR $\fdrtarget \in \zoint$.%, as defined in~\ref{eq:knock_thres} and~\ref{eq:knockp_thres}.
-Finally, only the features $j$ whose statistics $w_j$ is above the threshold are selected.
+conditioned by the target FDR $\fdrtarget \in \zoint$.
+In the end, only the features $j$ whose statistics $w_j$ is above the threshold are selected.
 \begin{equation}
     \hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}
 \end{equation}
-Depending on how restrictive the procedure ought to be, the threshold $\tau$ can be adapted.
+The threshold $\tau$ can be adapted depending on how restrictive the procedure ought to be.
 It leads to different guarantees regarding the control of the FDR\@.
-Barber-Candès establish two selection procedures,
+Two selection procedures are established by~\cite{fixed_x_knockoffs},
 namely \emph{knockoff} and \emph{knockoff+}.
 They control the modified FDR (as defined below) and the FDR respectively.
 \begin{definition}\label{def:mfdr}
-Given an estimate $\hat{\cS}$ of $\cS$ and a desired target false discovery rate $q \in [0, 1]$,
+Given an estimate $\hat{\cS}$ of $\cS$ and a desired false discovery rate target $q \in [0, 1]$,
 we define the modified $\fdr$ as follows:
 \begin{equation*}
     \mfdr = \E{
@@ -275,19 +275,19 @@ we define the modified $\fdr$ as follows:
     }
 \end{equation*}
 \end{definition}
-As $0 \leq q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
+Since $0 \leq q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
 It means that controlling the $\mfdr$ is less restrictive than controlling the $\fdr$,
-as the $\fdr$ could potentially be arbitrarily larger than the $\mfdr$.
+and the $\fdr$ could potentially be much larger than the $\mfdr$.
 But if the target threshold $q$ is not too small, and if many features are selected by the procedure,
 the modified version of the FDR is close enough to the actual $\fdr$.
-As will be shown later, being less restrictive by controlling only the $\mfdr$ can greatly improve the power
+Being less restrictive by controlling only the $\mfdr$ can greatly improve the power
 of the selection.
 
 The only difference between the \emph{knockoff} and the \emph{knockoff+} procedures is the selection threshold $\tau$.
 \begin{definition}
     (knockoff and knockoff+ thresholds)
     Given the statistics $\ww \in \R^p$ computed from $X$ and $\tX$,
-    we define the knockoff and knockoff+ threshold respectively as follows:
+    we define the knockoff and knockoff+ thresholds respectively as follows:
     \begin{align}
         \tau &=
         \min\left\{
@@ -295,7 +295,7 @@ The only difference between the \emph{knockoff} and the \emph{knockoff+} procedu
                 { \abs{\left\{ j \mid w_j \leq -t \right\}} }
                 { \abs{\left\{ j \mid w_j \geq t \right\}} }
             \leq q
-        \right\}\label{eq:knock_thres}\\
+        \right\}\label{eq:knock_thres}\\[7pt]
         \tau^+ &=
         \min\left\{
             t > 0 \mid \frac
@@ -305,8 +305,9 @@ The only difference between the \emph{knockoff} and the \emph{knockoff+} procedu
         \right\}\label{eq:knockp_thres}
     \end{align}
 \end{definition}
-They only differ by their numerator, where $\tau^+$ has an additional $+1$.
-The main result of Barber-Candès regarding the control of the $\mfdr$ and $\fdr$ is stated in~\ref{th:knockoffs}.
+These thresholds only differ by their numerator, where $\tau^+$ has an additional $+1$.
+The main result of~\cite{fixed_x_knockoffs, model_x_knockoffs}
+regarding the control of the $\mfdr$ and $\fdr$ is stated in Theorem~\ref{th:knockoffs}.
 \begin{theorem}\label{th:knockoffs}
     (guarantees of the knockoff procedures)
     Construct $\hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}$
@@ -325,9 +326,9 @@ in the same way the BH procedure usually controls the FDR even when the tests ar
 \section{Bottlenecks}\label{sec:kb}
 
 Despite the nice theoretical guarantees on the $\fdr$ control that the knockoff procedure proposes,
-two bottlenecks hurt its performances in the high dimensional setting.
+two bottlenecks hurt its performances in the high dimensional context.
 
-\subsection{SDP}\label{subsec:bot_sdp}
+\subsection{Knockoffs construction}\label{subsec:bot_sdp}
 
 In the gaussian setting,
 knockoff features are sampled according to the distribution~\ref{eq:conditional_gaussian_knockoffs}.
@@ -341,9 +342,9 @@ The control guarantees hold for any $\bs \in \R^p$ such that the covariance matr
 \end{proposition}
 \begin{proof}
     Note $D = \diag\bs$.
-    By computing the Schur complement~\cite{schur_complement}
-    $\Omega_{/\Sigma} = 2D - D\Sigma^{-1}D$,
-    $\Omega \succeq \0$ is equivalent to $\Omega_{/\Sigma} \succeq \0$.
+    Its Schur complement $\Omega_{/\Sigma}$ (see Appendix~\ref{sec:schur_complement}) is given by
+    $\Omega_{/\Sigma} = 2D - D\Sigma^{-1}D$.
+    From this, we get that $\Omega \succeq \0$ is equivalent to $\Omega_{/\Sigma} \succeq \0$.
     Define $M$ and its Schur complements as follows
     \begin{equation*}
         M = \begin{bmatrix}
@@ -365,17 +366,23 @@ finding good solutions amounts to solving a SDP which becomes intractable when $
 
 \subsection{Statistics computation}\label{subsec:bot_stats}
 
-and could take advantage of sparse naive Bayes to run faster.
+The computation of the statistics presented in Section~\ref{sec:ksc}
+on the concatenated feature matrix $\big[ X,\, \tX \big]$ may also become an obstacle when $n$ and $p$ grow.
+This comes from the fact that most estimators have hyper-parameters that need to be cross-validated.
+The cross-validation step may multiply the training time by several order of magnitudes.
+On top of that, most estimators have a training time complexity that is more than linear in the number of features.
+
 \bigbreak
-These two bottlenecks make the .
-The following chapters tackle these two issues by proposing fast statistics computation.
-From now, only binary classification problems will be considered, where the label $y$ takes values
-in $\left\{ \cC^+,\, \cC^- \right\}$.
+These two bottlenecks make the use of the knockoff procedure
+virtually impossible when $p$ is more than a few thousands.
+The following chapters tackle these two issues by proposing
+a coordinate ascent algorithm, low-rank approximations
+and statistics that are fast to compute.
 
 \section{Python implementation}\label{sec:python_implementation}
 
-Barber-Candès (along with other coauthors) provided R and MATLAB implementations
-of the knockoff framework\footnote{
+Implementations of the knockoff filter framework were provided by~\cite{fixed_x_knockoffs, model_x_knockoffs}
+(along with other coauthors) in the languages R and MATLAB\footnote{
     The R package page can be found at
     \href{https://cran.r-project.org/web/packages/knockoff/index.html}{this address}.
     Sources for both R and MATLAB are stored in this
@@ -384,19 +391,29 @@ of the knockoff framework\footnote{
 To the best of our knowledge, no public and unified Python implementation is presently available.
 As Python is a very popular language in the machine learning community,
 and as it keeps growing year after year,
-we decided to make a Python implementation that contains fundamental components and that may be extended
-depending on the needs\footnote{
+we decided to make a Python implementation\footnote{
     The implementation can be found at
     \href{}{this address}
-}.
-The implementation is deliberately compatible with Scikit-Learn~\cite{sklearn} estimators and .
+} that contains fundamental components and that may be easily extended
+depending on the needs of potential users.
+
+The implementation is deliberately compatible with the Scikit-Learn ecosystem~\citep{sklearn},
+so that estimators may be combined and used in a pipeline object.
 It provides 3 main components,
 namely a knockoffs generator \code{KnockoffsGenerator},
 statistics computations utility functions,
 and a selector \code{BaseKnockoffsSelector}.
-\code{KnockoffsGenerator} and \code{BaseKnockoffsSelector} subclass \code{BaseEstimator} and \code{TransformerMixin}
-and \code{BaseEstimator} and \code{SelectorMixin} from Scikit-Learn respectively,
-so they are compatible with the Scikit-Learn ecosystem.
+The constituent \code{KnockoffsGenerator} subclasses
+\code{BaseEstimator} and \code{TransformerMixin} from Scikit-Learn,
+and \code{BaseKnockoffsSelector} subclasses
+and \code{BaseEstimator} and \code{SelectorMixin}.
+They implement \code{fit} and \code{transform} methods which are intuitive and follow Scikit-Learn semantics.
+
+Components whose speed is crucial are written in Cython~\citep{cython}
+and take advantage of the highly optimized libraries BLAS and LAPACK,
+that are available in Cython through a SciPy wrapper.
+It is for instance the case of the coordinate ascent algorithm detailed in Chapter~\ref{ch:sdp},
+allowing to construct knockoffs efficiently.
 \begin{calgorithm}
 \begin{minted}[linenos]{python}
 selector = SimpleKnockoffsSelector(

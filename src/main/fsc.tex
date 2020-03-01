@@ -16,7 +16,7 @@ Let $\tX \in \R^{n \times p}$ be sampled from that knockoff distribution.
 
 Experimentally, cross-validating a regressor (or classifier) against the data $\big[ X, \tX \big]$,
 keeping its coefficients in absolute value,
-and aggregating them as described in~\ref{subsec:ksa} yields excellent results.
+and aggregating them as described in Subsection~\ref{subsec:ksa} yields excellent results.
 Most classical regression models scale pleasantly as $p$ increases;
 $\cO\left( n \cdot p \right)$ for Lasso and logistic regression,
 $\cO\left( n \cdot p^2 \right)$ for SVMs.
@@ -32,3 +32,5 @@ Multi-stage procedure~\cite{multi_stage_fdr}
 
 \section{Fast statistics}\label{sec:a}
 
+From now, only binary classification problems will be considered, where the label $y$ takes values
+in $\left\{ \cC^+,\, \cC^- \right\}$.

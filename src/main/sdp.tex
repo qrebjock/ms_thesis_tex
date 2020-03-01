@@ -12,7 +12,7 @@ $\bupsilon,\, \Upsilon$ are formulated in~\ref{eq:conditional_gaussian_knockoffs
     \end{cases*}
 \end{equation}
 More generally, the same parameters are derived by only imposing
-$\big[ X, \tX \big]_{\swap\left( S \right)}$ and $\big[ X, \tX \big]$
+$\big[ X; \tX \big]_{\swap\left( S \right)}^\top$ and $\big[ X; \tX \big]^\top$
 to have equal first two moments
 for any subset
 $S \subseteq \left\{ 1, \dots, p \right\}$,
@@ -442,7 +442,7 @@ but can be done in $\cO\left( n^2 \cdot p \right)$ steps and without extra memor
 Rather than simply computing a low-rank approximation $U \Lambda U^\top$ and then $D$,
 these randomized estimations allow to achieve alternating descent on $U$ and $D$ without constructing $\cove$.
 Nonetheless, one single step seems to be often very close to a local minimum.
-We implement such algorithms and show that they scale moderately well with $n$ and $p$.
+We implement such algorithms and find that they scale moderately well with $n$ and $p$.
 
 \bigbreak
 In the following sections,
@@ -521,7 +521,7 @@ Finally, when $s_j$ is updated, the coordinate $(j,\, j)$ of $F$ is changed,
 which induces a rank-1 update of $A$.
 All these operations can be done in $\cO\left( k^2 \right)$ steps.
 The matrix $F$ being diagonal,
-it requires only $p$ floats to store it and its inversion is trivial.
+it requires only $p$ floats to be stored and its inversion is trivial.
 
 \begin{algorithm}
     \caption{Low-rank coordinate ascent}\label{alg:low_rank_coordinate_ascent}
@@ -565,7 +565,7 @@ $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$.
 Figure~\ref{fig:low_rank_times} shows the convergence times obtained in these experiments,
 as a function of $p$ and $k$.
 It demonstrates that the scalability is much better than with SCS,
-thanks to the low-rank approximation and the fact that coordinate descent
+thanks to the low-rank approximation and the fact that coordinate ascent
 is particularly well-suited to this optimization problem.
 Even with $100\,000$ features, the convergence could be obtained in a few minutes.
 We hope to prevent numerical instabilities in future versions and attain the

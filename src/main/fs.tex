@@ -14,16 +14,21 @@ It is closely related to Occam's razor which is a principle stating that
 the simplest explanation is often the best one.
 More formally, let $\cX$ be a $p$-dimensional random vector representing observed features
 and $\cY$ a random target that may depend on $\cX$.
-For example, $\cX$ could be the levels of expression of the genes of an individual,
+For example, $\cX$ could be the expression levels of the genes of an individual,
 and $\cY \in \zoset$ a binary response indicating whether or not the person has some disease.
 We wish to find the subset of covariates $\cS \subseteq \fset$ that best explains the target $\cY$,
 be it a numerical or a categorical variable.
 The notion of relevance of a feature $\cX_j$ can be captured by the dependence of $\cY$ on $\cX_j$.
 To do so, suppose that the joint vector $\left( \cX,\, \cY \right)$ follows some distribution,
 that is $\left( \cX,\, \cY \right) \sim \mathcal{P}_{\cX,\, \cY}$.
-Even though finding the conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope in general,
+Even though finding the full conditional distribution $\cP_{\cY \mid \cX}$ is beyond hope in general,
 one may be interested in finding on which subset $\cS$ of features $\cP_{\cY \mid \cX}$ depends.
-Such a subset is not necessarily unique
+As this set is not necessarily unique,
+the principle of parsimony motivates us to find the smallest one.
+In other words, we are interested in finding the smallest subset $\cS$ such that
+$\cY \mid \left\{ \cX_j \right\}_{j \in \cS}$ is independent of $\left\{ \cX_j \right\}_{j \notin \cS}$.
+Such a subset is called a Markov Blanket~\citep{markov_blanket, markov_blanket_fs}
+and is not necessarily unique and may not even exist.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{figures/fs_subset_not_unique.pdf}
@@ -39,18 +44,18 @@ Such a subset is not necessarily unique
     }
     \label{fig:fs_subset_not_unique}
 \end{figure}
-Markov blanket~\cite{markov_blanket}, b~\cite{markov_blanket_fs}.
 We define the set of null features $\cH_0 \subseteq \fset$ as follows:
 $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
 (where $\cX_{-j}$ denotes that all vector entries are kept except the $j$th).
 The goal is thus to find a procedure selection a subset of features
 $\hat{\cS} \subseteq \fset$.
 
-In the case of linear regression where we assume that the target and the features follow a linear relationship
+As a matter of example,
+in the case of linear regression where we assume that the target and the features follow a linear relationship
 \begin{equation*}
-    \cY = \cX^\top \bbeta \epsilon
+    \cY = \cX^\top \bbeta + \epsilon
 \end{equation*}
-where $\epsilon$ is a gaussian noise,
+where $\bbeta \in \R^p$ and $\epsilon$ is a gaussian noise,
 feature selection would consist in identifying which coefficients of $\bbeta$ are non null.
 
 In practice, one would observe several independent realizations of
@@ -97,7 +102,7 @@ d\cite{fs_for_classification_a_review}
 
 \subsubsection{Lasso}\label{subsubsec:lasso}
 
-First rediscovered by Tibshirani~\cite{lasso} in 1996,
+First rediscovered by~\cite{lasso},
 the Lasso has become increasingly popular because of its capacity to both shrink
 the coefficients towards 0 and to select a subset of the features.
 It is basically a linear least squares regression whose weights are penalized by their $\ell_1$ norm,
@@ -130,7 +135,7 @@ as for example logistic regression or SVMs.
 
 \subsubsection{Sparse center classifiers}
 
-Nearest centroid classification~\cite{centroid_classification} is a very simple classification scheme.
+Nearest centroid classification~\citep{centroid_classification} is a very simple classification scheme.
 It consists in computing the averages $\btheta^\pm = \sum_{j \in \cI^\pm} \xx_i \in \R^p$
 of the data points from the positive and negative classes $\cC^\pm$,
 where $\cI^\pm$ contain the positive and the negative points.
@@ -155,7 +160,7 @@ of~\ref{eq:centroids_averages} that can be solved very efficiently in closed-for
 The authors obtain accuracy scores on par with the ones of the Lasso on the datasets they experiment.
 This a sparse centroid classification allows in particular to perform feature selection
 by keeping the features $j$ such that $\btheta^+_j \neq \btheta^-_j$.
-%
+
 \bigbreak
 None of the selection scheme presented above offer strong guarantees regarding
 the number of false positives that are detected.
