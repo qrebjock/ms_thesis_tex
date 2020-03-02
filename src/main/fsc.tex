@@ -1,16 +1,16 @@
 \chapter{Fast statistics computation}\label{ch:fsc}
 
-The computation of statistics is a key step in the knockoff selection process described in section~\ref{ch:knockoffs}.
+As described in Chapter~\ref{ch:knockoffs},
+the computation of statistics on the concatenated feature matrix
+is a key step in the knockoff selection process.
 As it has been discussed, a large variety of statistics control the FDR,
 provided that the \textit{flip-sign} property~\ref{def:flip_sign} is satisfied.
-
-However, the power can drastically change depending on how good the statistics are.
+However, the power is highly impacted depending on how suitable the statistics are for the data.
 We also suppose that the knockoffs were generated respecting the conditions\dots.
 Experimentally, it appears that for most tasks the coefficients of a cross-validated Lasso
 
 In this chapter, we note $X \in \R^{n \times p}$ the original design matrix,
-and we suppose that the distribution $\tcX \mid \cX$ could be computed.
-Let $\tX \in \R^{n \times p}$ be sampled from that knockoff distribution.
+and we suppose that we sampled valid knockoff features $\tX\in \R^{n \times p}$.
 
 \section{Lasso is good but slow}\label{sec:}
 
@@ -34,3 +34,7 @@ Multi-stage procedure~\cite{multi_stage_fdr}
 
 From now, only binary classification problems will be considered, where the label $y$ takes values
 in $\left\{ \cC^+,\, \cC^- \right\}$.
+
+\section{Sparse naive Bayes}\label{sec:snb}
+
+\input{main/snb.tex}

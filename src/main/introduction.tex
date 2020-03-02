@@ -3,15 +3,16 @@
 \markboth{Introduction}{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-Feature selection is an active area of research in statistics and machine learning aiming at
-making models more interpretable, among other things.
+Feature selection is an active area of research in statistics and machine learning
+aiming, among others, at making models more interpretable.
 The idea is to identify the most relevant observed covariates that best explain a phenomenon.
 Often, one is interested in selecting as many pertinent features (true positives) as possible,
 that is, maximizing true discoveries,
 while maintaining the number of false positives under a certain threshold.
-This problem is called false discovery rate control and finds applications in many sciences.
+This problem is called false discovery rate control and finds applications in many sciences,
+such as biology, economy, medicine and many others.
 This is why a multitude of techniques have been developed to this end,
-the most widely used being~\cite{bh}.
+the most widely used being the one proposed by~\cite{bh}.
 However, in the past two decades, acquiring massive amounts of data has become increasingly cheaper
 and it is now frequent that datasets contain several dozens of thousands of features.
 A common practice is to measure as many variables as possible,
@@ -20,35 +21,42 @@ On top of that, measuring covariates is often simpler than labeling samples with
 as the latter requires human efforts and can hardly be automatized.
 For that reason, many datasets have more features than samples
 and it is especially the case in some fields like biology.
-For instance, genomic and fMRI data contain a huge amount of feature but relatively low number of patients.
+For instance, genomic and fMRI data contain a huge amount of features but relatively low number of patients.
 In this high dimension setup, feature selection and false discovery rate control are particularly challenging
 because estimations based on samples suffer from a high variance.
 
 Recently~\citet{fixed_x_knockoffs} introduced the knockoffs framework,
-which is a set of procedures to perform feature selection
-that are proven to theoretically control the false discovery rate under mere assumptions.
-The key idea is to build a knockoff (that is, fake) feature for each original feature,
+which is a set of procedures capable of performing feature selection,
+and that are proven to theoretically control the false discovery rate under mere assumptions.
+The key idea is to build a knockoff (that is, fake) feature for each authentic feature,
 and compare their significance against a statistical model.
 This framework was revisited and extended to a more general inference setting~\citep{model_x_knockoffs},
 allowing in particular to perform feature selection in the high dimension case,
 that is when the number of features is larger than the number of samples.
 The generality of this selection procedure
 and the fact that many statistical models can be plugged in make it particularly appealing.
-In this work, we focus on the high-dimensional knockoff setting,
-Several bottleneck of the knockoff procedure are addressed.
+However, the construction of the knockoff features and the computation of test statistics
+are two costly steps requiring to solve optimization problems whose size grow with the number of features.
+Because of these two bottlenecks,
+the knockoff framework can hardly be employed in high dimension in practice despite the theoretical guarantees.
+
+In this work, we focus on the high-dimensional knockoff setting and propose techniques
+to alleviate the bottlenecks mentioned above.
 Constructing quality knockoffs relies on solving a SDP problem
 which quickly becomes intractable as the dimension increases.
+We propose a coordinate ascent approach with low-rank approximations
+that both theoretically and experimentally scale well with the number of features.
 
 This master thesis is organized as follows.
 Chapter~\ref{ch:fs} introduces the concept of feature selection and
 false discovery rate control, along with a few techniques that are usually employed.
 Chapter~\ref{ch:knockoffs} details the knockoff selection procedure developed by Barber-Candès
 and principal theoretical guarantees.
-Chapter 2 introduces a sparse version of naive Bayes that scales linearly in the number of features against which
-it is trained.
 In Chapter~\ref{ch:sdp},
 we focus on the knockoff features constitution part
 and propose a log-barrier coordinate ascent algorithm to solve the main bottleneck of the construction.
 We show that low-rank covariance approximations
+Chapter~\ref{ch:fsc} introduces a sparse version of naive Bayes that scales linearly in the number of features against which
+it is trained.
 Finally, in Chapter~\ref{ch:exp} we detail experiments performed on genetic data and prove the scalability
 and efficiency of our methods.

@@ -28,30 +28,35 @@ the principle of parsimony motivates us to find the smallest one.
 In other words, we are interested in finding the smallest subset $\cS$ such that
 $\cY \mid \left\{ \cX_j \right\}_{j \in \cS}$ is independent of $\left\{ \cX_j \right\}_{j \notin \cS}$.
 Such a subset is called a Markov Blanket~\citep{markov_blanket, markov_blanket_fs}
-and is not necessarily unique and may not even exist.
+and is not necessarily unique as shown in Figure~\ref{fig:fs_subset_not_unique}.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{figures/fs_subset_not_unique.pdf}
     \caption{
-        Illustration of the non-uniqueness of the Markov blanket.
+        Illustration of the non-uniqueness of the Markov blanket~\citep{model_x_knockoffs}.
         Here $\cX_1 \sim \cN\left( 0,\, 1 \right)$
         and $\cX_2 \sim \cN\left( 0,\, 1 \right)$ are independent,
-        $\cZ = \cX_1^2 + \cX_2^2$.
-        $\cY$ is $\cC_+$ if $\cZ \geq \frac{1}{2}$,
+        $\cX_3 = \cX_1 - \cX_2$.
+        $\cY$ is $\cC_+$ if $\cX_1 + \cX_2 \geq 0$,
         $\cC_-$ otherwise.
-        The target $\cY$ can be predicted directly from both the pair $\left( \cX_1,\, \cX_2 \right)$
-        or the distance to origin $\cZ$ alone.
+        The target $\cY$ can be predicted directly from any of the pairs
+        $\left( \cX_1,\, \cX_2 \right)$, $\left( \cX_2,\, \cX_3 \right)$, $\left( \cX_1,\, \cX_3 \right)$.
     }
     \label{fig:fs_subset_not_unique}
 \end{figure}
-We define the set of null features $\cH_0 \subseteq \fset$ as follows:
-$j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
-(where $\cX_{-j}$ denotes that all vector entries are kept except the $j$th).
-The goal is thus to find a procedure selection a subset of features
-$\hat{\cS} \subseteq \fset$.
-
+But this example is pathological because a feature is an exact linear combination of the two others.
+Under weak conditions, there exist a unique Markov Blanket containing the set of features of interest.
+\begin{remark}
+    In that case, the Markov Blanket coincides with the set of features
+    which are said to be pairwise conditional independent.
+    We define the set of null features $\cH_0 \subseteq \fset$ as follows:
+    $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
+    (where $\cX_{-j}$ denotes that all vector entries are kept except the $j$th).
+    The relevant set is then $\cS = \fset \setminus \cH_0$
+    and the goal is to find a subset of features $\hat{\cS} \subseteq \fset$ as close to $\cS$ as possible.
+\end{remark}
 As a matter of example,
-in the case of linear regression where we assume that the target and the features follow a linear relationship
+consider the case of linear regression where we assume that the target and the features follow a linear relationship
 \begin{equation*}
     \cY = \cX^\top \bbeta + \epsilon
 \end{equation*}
@@ -65,46 +70,65 @@ The independence of the observations is a credible assumption in many real life 
 
 \subsection{Motivation}\label{subsec:fs_motivation}
 
-Feature selection may be used in a multitude of contexts and we point out here the main benefits of
-performing it on a dataset.
+Feature selection may be used in a multitude of contexts.
+Sometimes, people are not even interested in the most relevant features
+but just want to reduce the size of their dataset.
+We point out here the main benefits of performing it on a dataset.
 \begin{enumerate}
     \item \textit{Making a model more interpretable.}
-    It gives insights on the most relevant features to explain the observed target.
-    It is for instance decisive when you are interested in the role of genes.
+    When a statistical model is built, for example linear regression,
+    one is often interested in the weights attributed to each feature.
+    It gives insights regarding the impact of a given feature on the target.
+    In the era of deep learning~\citep{deep_learning},
+    many machine learning models contain millions of parameters and are not interpretable at all anymore.
+    Feature selection may be a way to reduce the number of parameters and concentrate on the few pertinent ones,
+    thus reducing the model complexity.
     \item \textit{Facilitating data visualization.}
-    When only a small subset of the features is selected,
-    projecting it to a low (2 or 3) dimensional space is easier.
+    Visualizing data may give a lot of intuition and understanding on a phenomenon.
+    Our perceptions are known to be misleading in high dimension,
+    and even in 3 dimensions~\citep{graphical_perception}.
+    For this reason, many algorithms, as $t$-SNE for example~\citep{t_sne},
+    try to project the high-dimensional data to a more accessible space.
+    But that step is costly, and the fewer features, the more representative the output will be.
+    Pre-selecting a small subset of impactful features can usually greatly improve the results of such projections.
     \item \textit{Reducing the training time.}
     Many machine learning algorithm have a super-linear time complexity in the number of features.
-    Pre-selecting a small subset with a cheaper method can noticeably as less\citep{high_dimensional_fs}.
+    Pre-selecting a small subset with a cheaper method
+    can noticeably improve performances~\citep{high_dimensional_fs}.
     \item \textit{Improving the generalization of machine learning models.}
-    Irrelevant features may only be noise and fitting a model against them at train time
-    is prone to over-fitting noise.
+    Test accuracy can be increased when a model is trained only on significant features~\citep{fs_overfit}.
+    Training a model against irrelevant features is prone to over-fitting noise.
     \item \textit{Avoiding the curse of dimensionality}~\citep{curse_dimensionality}.
-    For example, the $k$-nearest neighbors algorithms~\citep{knn} is known to perform badly as the feature space
+    For example, the $k$-nearest neighbors algorithm~\citep{knn} is known to perform badly as the feature space
     dimension increases.
     The number of samples actually has to grow exponentially in the number of features in order for the algorithm
     to perform decently.
 \end{enumerate}
 Recently, the cost of measuring more features has drastically decreased.
 Many datasets, and especially in biology, end up with several dozens of thousands of features.
-Most of these features are expected to be insignificant, but there is a priori no reason to eliminate them.
-Adding them to the feature matrix is cheap, and it is then the role of the machine learning algorithm
-to detect the relevant ones.
+Most of these features are expected to be insignificant, but there is a priori no reason not to collect them.
+Expanding the feature matrix is cheap, and it is then the role of machine learning algorithms
+to detect relevant columns subsequently.
 
 \subsection{Techniques}\label{subsec:fst}
 
-A lot of different paradigms and techniques to perform feature selection exist~\cite{intro_fs}
-a~\cite{fs_text_classification}.
-b\cite{gene_selection_cancer_svm}
-c\cite{fs_for_classification}
-d\cite{fs_for_classification_a_review}
+There exist a lot of different paradigms and techniques
+to perform feature selection~\citep{intro_fs, fs_for_classification_a_review}.
+Simplest approaches calculate a score for each feature and rank them accordingly;
+only those with the highest score are kept.
+The problem of this is that features that may seem meaningless alone
+can turn out to be worthwhile when coupled with other features.
+
+In general,
+different schemes have to be used depending
+on the type of data and the field of study~\citep{fs_text_classification, gene_selection_cancer_svm, fs_for_classification}.
+We detail here only two methods to which we will come back later.
 
 \subsubsection{Lasso}\label{subsubsec:lasso}
 
 First rediscovered by~\cite{lasso},
 the Lasso has become increasingly popular because of its capacity to both shrink
-the coefficients towards 0 and to select a subset of the features.
+the coefficients of a linear regression towards $0$, and to select a subset of the features.
 It is basically a linear least squares regression whose weights are penalized by their $\ell_1$ norm,
 multiplied by some factor $\lambda > 0$.
 %
@@ -114,40 +138,41 @@ multiplied by some factor $\lambda > 0$.
     \frac{1}{2}\norm{\yy - X\bb}_2^2 + \lambda\norm{\bb}_1
 \end{equation}
 %
-The $\ell_1$ penalty tends to make the weights $\hat{\bbeta}(\lambda)$ sparse as $\lambda$ increases.
+The $\ell_1$ penalty tends to make the weights $\hat{\bbeta}(\lambda)$ sparser as $\lambda$ increases.
 Actually, for any feature $j$,
 there is a $\lambda_{\min}$ such that for all $\lambda \geq \lambda_{\min}$,
 $\hat{\bbeta}_j(\lambda) = 0$.
 That wouldn't be the case with an $\ell_2$ penalty,
-for which the coefficients tend to $0$ without reaching that value.
+for which the coefficients usually tend to $0$ without reaching that value.
 This property makes the Lasso particularly suited for feature selection;
 just keep the features whose weight is non-zero.
 However, the choice of $\lambda$ seems to be arbitrary,
 especially as it's not possible to know beforehand how many features will be selected.
 
-The behavior of the path $\lambda \mapsto \hat{\bbeta}(\lambda)$ has been extensively studied,
-and the algorithm LARS~\cite{lars} was developed to efficiently compute it,
-which is possible because it is piecewise linear.
-It allows to compute $\hat{\bbeta}$ for all relevant value of $\lambda$ at a marginal cost.
-In practice, the $\lambda$ giving the highest score on a \emph{train} dataset is picked.
+The behavior of the mapping $\lambda \mapsto \hat{\bbeta}(\lambda)$ has been extensively studied,
+and the algorithm LARS~\citep{lars} was developed to efficiently compute it.
+It is possible to do so because this path is piecewise linear.
+It allows to compute $\hat{\bbeta}$ for all relevant values of $\lambda$ at a marginal cost.
+In practice, the value of $\lambda$ giving the highest score on cross-validation is picked.
 The $\ell_1$ regularization can easily be extended to many other estimators than the least squares,
 as for example logistic regression or SVMs.
 
 \subsubsection{Sparse center classifiers}
 
 Nearest centroid classification~\citep{centroid_classification} is a very simple classification scheme.
-It consists in computing the averages $\btheta^\pm = \sum_{j \in \cI^\pm} \xx_i \in \R^p$
+When there are only two labels,
+it consists in computing the averages $\btheta^\pm = \sum_{j \in \cI^\pm} \xx_i \in \R^p$
 of the data points from the positive and negative classes $\cC^\pm$,
 where $\cI^\pm$ contain the positive and the negative points.
 A new data point $\xx \in \R^p$ is classified positive or negative depending on its closest average
 $\btheta^+$ or $\btheta^-$.
 Finding the class averages can be formulated as the following optimization problem.
 \begin{equation}\label{eq:centroids_averages}
-    \argmin_{\btheta^+, \btheta^-}
+    \argmin_{\btheta^+,\, \btheta^-}
         \frac{1}{n^+} \sum_{i \in \cI^+} \big\lVert \xx_i - \btheta^+ \big\rVert^2_2
         + \frac{1}{n^-} \sum_{i \in \cI^-} \big\lVert \xx_i - \btheta^- \big\rVert^2_2
 \end{equation}
-Note $\Delta$ the decision boundary,
+Note now $\Delta$ the decision boundary,
 such that $\xx$ is classified $\cC^+$ if $\Delta\left( \xx \right) > 0$ and $\cC^-$ otherwise.
 \begin{equation}\label{eq:centroids_boundary}
     \Delta(\xx) = \norm{\xx - \btheta^-}^2_2 - \norm{\xx - \btheta^+}^2_2
@@ -155,10 +180,12 @@ such that $\xx$ is classified $\cC^+$ if $\Delta\left( \xx \right) > 0$ and $\cC
 The expression~\ref{eq:centroids_boundary} can be expanded into
 $\Delta(\xx) = \norm{\btheta^+}^2_2 + \norm{\btheta^-}^2_2 + 2\xx^\top(\btheta^+ - \btheta^-)$,
 making it clear that the decision depends on the feature $j$ if and only if $\btheta^+_j \neq \btheta^-_j$.
-Using this observation,\cite{sparse_center_classifiers} introduced a $\ell_0$ penalized version
-of~\ref{eq:centroids_averages} that can be solved very efficiently in closed-form.
+Using this observation~\cite{sparse_center_classifiers} introduced in~\ref{eq:centroids_averages}
+an additional $\ell_0$-norm constraint $\norm{\btheta^+ - \btheta^-}_0 \leq k$,
+such that at most $k$ entries of $\btheta^+$ and $\btheta^-$ are different.
+They show that this version can be solved very efficiently in closed-form.
 The authors obtain accuracy scores on par with the ones of the Lasso on the datasets they experiment.
-This a sparse centroid classification allows in particular to perform feature selection
+This a sparse centroid classification allows notably to perform feature selection
 by keeping the features $j$ such that $\btheta^+_j \neq \btheta^-_j$.
 
 \bigbreak
@@ -204,18 +231,19 @@ Even though it is beyond hope to retrieve the whole set $\mathcal{S}$ with no er
 a multitude of techniques attempt to find as many relevant features as possible
 (that is, maximizing the power)
 while maintaining the FDR under a certain threshold.
-The concept of $\fdr$ was first introduced by~\cite{bh} in 1995 and has become increasingly decisive in some
-sciences such has biology where the acquisition of a huge number of covariates is frequent.
-It is now possible to measure the expression of several dozens of thousands of genes for a given individual.
+The concept of $\fdr$ was first introduced by~\cite{bh} and has become increasingly decisive in some
+sciences such has biology
+where the acquisition of a huge number of covariates is frequent~\cite{statistical_inference_genome}.
+It is now possible to measure the expression levels of several dozens of thousands of genes for a given individual.
 
 \subsection{Benjamini–Hochberg-Yekutieli procedures}\label{subsec:bhq}
 
-The Benjamini–Hochberg~\cite{bh} and Benjamini–Yekutieli~\cite{by} schemes are two methods controlling the FDR
+The BJ~\citep{bh} and BY~\citep{by} schemes are two methods controlling the FDR
 that are widely used in practice.
 They are closely related to each other but offer different guarantees regarding the effective control of the FDR\@.
 BH is less conservative than BY but makes stronger assumptions on the $p$-values it manipulates.
 
-For each feature $j \in \fset$, let $\cH_j$ be the null hypothesis ($j$ does not belong to $cS$),
+For each feature $j \in \fset$, let $\cH_j$ be the null hypothesis ($j$ does not belong to $\cS$),
 and $\pvalue_j$ the corresponding $p$-value.
 Let $\fdrtarget \in [0, 1]$ be some FDR target that should not be exceeded.
 We note $(\pvalue_{(j)})_j$ the sequence of $p$-values in increasing order;
@@ -265,11 +293,13 @@ c(p) = \sum_{j = 1}^p \frac{1}{j}
     \label{fig:bhy}
 \end{figure}
 \bigbreak
-Both procedures are illustrated in figure~\ref{fig:bhy}.
+Both procedures are illustrated in Figure~\ref{fig:bhy}.
 They require $p$-values to be computed, which is not always feasible, especially when $p > n$.
 Furthermore, BH and BY have stronger guarantees than desired;
 for a desired FDR level $\fdrtarget$,
 they ensure that $\fdr \leq \frac{m_0}{p}\fdrtarget$,
 and the factor $\frac{m_0}{p}$ might be much smaller than 1.
+This is likely to affect the eventual statistical power of the procedure.
 
-% \cite{statistical_inference_genome}\cite{resampled_fdr_control}\cite{unified_fdr_control}
+Many other FDR control techniques exist~\citep{resampled_fdr_control, unified_fdr_control}
+but we won't focus on them.
