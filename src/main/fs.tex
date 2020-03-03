@@ -52,28 +52,28 @@ Under weak conditions, there exist a unique Markov Blanket containing the set of
     We define the set of null features $\cH_0 \subseteq \fset$ as follows:
     $j \in \cH_0$ if and only if $\cY \independent \cX_j \mid \cX_{-j}$
     (where $\cX_{-j}$ denotes that all vector entries are kept except the $j$th).
-    The relevant set is then $\cS = \fset \setminus \cH_0$
-    and the goal is to find a subset of features $\hat{\cS} \subseteq \fset$ as close to $\cS$ as possible.
+    The relevant set of features is then $\cS = \fset \setminus \cH_0$
+    and the goal is to find a subset $\hat{\cS} \subseteq \fset$ as close to $\cS$ as possible.
 \end{remark}
 As a matter of example,
 consider the case of linear regression where we assume that the target and the features follow a linear relationship
 \begin{equation*}
     \cY = \cX^\top \bbeta + \epsilon
 \end{equation*}
-where $\bbeta \in \R^p$ and $\epsilon$ is a gaussian noise,
-feature selection would consist in identifying which coefficients of $\bbeta$ are non null.
+where $\bbeta \in \R^p$ and $\epsilon$ is a gaussian noise.
+Feature selection would consist in identifying which coefficients of $\bbeta$ are non null.
 
 In practice, one would observe several independent realizations of
 $\left( \cX,\, \cY \right)$ and would aggregate them into a feature matrix
 $X \in \R^{n \times p}$ of $n$ samples and $p$ features, and a target vector $\yy \in \R^n$ respectively.
-The independence of the observations is a credible assumption in many real life settings
+The independence of the observations is a credible assumption in many real life settings.
 
 \subsection{Motivation}\label{subsec:fs_motivation}
 
 Feature selection may be used in a multitude of contexts.
 Sometimes, people are not even interested in the most relevant features
 but just want to reduce the size of their dataset.
-We point out here the main benefits of performing it on a dataset.
+We point out here the main benefits of performing feature selection.
 \begin{enumerate}
     \item \textit{Making a model more interpretable.}
     When a statistical model is built, for example linear regression,
@@ -107,7 +107,7 @@ We point out here the main benefits of performing it on a dataset.
 Recently, the cost of measuring more features has drastically decreased.
 Many datasets, and especially in biology, end up with several dozens of thousands of features.
 Most of these features are expected to be insignificant, but there is a priori no reason not to collect them.
-Expanding the feature matrix is cheap, and it is then the role of machine learning algorithms
+Expanding the feature matrix is cheap, and it is the role of machine learning algorithms
 to detect relevant columns subsequently.
 
 \subsection{Techniques}\label{subsec:fst}
@@ -115,7 +115,7 @@ to detect relevant columns subsequently.
 There exist a lot of different paradigms and techniques
 to perform feature selection~\citep{intro_fs, fs_for_classification_a_review}.
 Simplest approaches calculate a score for each feature and rank them accordingly;
-only those with the highest score are kept.
+only those with the highest scores are kept.
 The problem of this is that features that may seem meaningless alone
 can turn out to be worthwhile when coupled with other features.
 
@@ -145,9 +145,9 @@ $\hat{\bbeta}_j(\lambda) = 0$.
 That wouldn't be the case with an $\ell_2$ penalty,
 for which the coefficients usually tend to $0$ without reaching that value.
 This property makes the Lasso particularly suited for feature selection;
-just keep the features whose weight is non-zero.
+just keep the features whose weights are non-zero.
 However, the choice of $\lambda$ seems to be arbitrary,
-especially as it's not possible to know beforehand how many features will be selected.
+especially as it's not possible to know ahead of time how many features will be selected.
 
 The behavior of the mapping $\lambda \mapsto \hat{\bbeta}(\lambda)$ has been extensively studied,
 and the algorithm LARS~\citep{lars} was developed to efficiently compute it.
@@ -155,7 +155,7 @@ It is possible to do so because this path is piecewise linear.
 It allows to compute $\hat{\bbeta}$ for all relevant values of $\lambda$ at a marginal cost.
 In practice, the value of $\lambda$ giving the highest score on cross-validation is picked.
 The $\ell_1$ regularization can easily be extended to many other estimators than the least squares,
-as for example logistic regression or SVMs.
+as for example logistic regression~\citep{logistic_regression} or SVMs~\citep{svm}.
 
 \subsubsection{Sparse center classifiers}
 
@@ -191,7 +191,7 @@ by keeping the features $j$ such that $\btheta^+_j \neq \btheta^-_j$.
 \bigbreak
 None of the selection scheme presented above offer strong guarantees regarding
 the number of false positives that are detected.
-The selected subset $\hat{\cS}$ could potentially be disjoint to $\cS$
+The selected subset $\hat{\cS}$ could potentially be disjoint from $\cS$
 if the selection criterion is not adapted to the problem.
 
 \section{False discovery rate control}\label{sec:fdrc}
@@ -203,22 +203,22 @@ Intuitively, the former (resp.\ the latter) assesses the expected proportion of 
 
 \subsection{Definitions}\label{subsec:fdr_def}
 
-Suppose the conditional probability distribution $\cY \mid \cX$ depends only on a subset of features
+Suppose the conditional probability distribution $\cY \mid \cX$ depends only on the subset of features
 $\cS \subset \left\{ 1, \dots, p \right\}$.
 A feature selection algorithm outputs a subset $\hat{\cS} \subset \fset$ (which is potentially random)
 that it judges to be relevant.
-The false discovery proportion (FDR), the false discovery rate (FDR), and the power are defined as follows
+The false discovery proportion (FDP), the false discovery rate (FDR), and the power are defined as follows
 \begin{equation}\label{eq:fdr_def}
     \fdp = \frac
-        {\big\lvert \big\{ \hat{\cS} \setminus \cS \big\} \big\rvert}
+        {\big\lvert \hat{\cS} \setminus \cS \big\rvert}
         {\lvert \hat{\cS} \rvert}
     \text{,}\qquad\quad
     \fdr = \Eb{\fdp}
     \text{,}\qquad\quad
     \power = \E{
         \frac
-            {\big\lvert \big\{ \hat{\cS} \cap \cS \big\} \big\rvert}
-            {\lvert\hat{\cS}\rvert}
+            {\big\lvert \hat{\cS} \cap \cS \big\rvert}
+            {\lvert \cS \rvert}
     }
 \end{equation}
 The $\fdp$ merely measures the proportion of features in $\hat{\cS}$ that are not in $\cS$.
@@ -227,14 +227,12 @@ and possibly on the inherent randomness of the selection algorithm.
 That is why the $\fdr$ assesses the expectation of this value.
 Finally, the $\power$ is the fraction of the important features that were actually discovered, in average.
 
-Even though it is beyond hope to retrieve the whole set $\mathcal{S}$ with no error,
+Even though it is inconceivable to retrieve the whole set $\cS$ with no error,
 a multitude of techniques attempt to find as many relevant features as possible
 (that is, maximizing the power)
 while maintaining the FDR under a certain threshold.
 The concept of $\fdr$ was first introduced by~\cite{bh} and has become increasingly decisive in some
-sciences such has biology
-where the acquisition of a huge number of covariates is frequent~\cite{statistical_inference_genome}.
-It is now possible to measure the expression levels of several dozens of thousands of genes for a given individual.
+sciences such has biology where medications may be developed from true positives~\citep{statistical_inference_genome}.
 
 \subsection{Benjamini–Hochberg-Yekutieli procedures}\label{subsec:bhq}
 

@@ -37,8 +37,8 @@ Unfortunately, it can only perform adequately when $n \geq 2p$,
 even though it can be partially adapted to the case where $n \geq p$.
 Later~\cite{model_x_knockoffs} proposed an extension of the framework called \textit{model}-X knockoffs,
 in which knockoff features are sampled from a learned distribution.
-Despite the restriction of \textit{fixed}-X knockoffs, that method is still appealing as the construction of the
-knockoff variables is straightforward (but costly).
+Despite the restriction of \textit{fixed}-X knockoffs, this method is still appealing as the construction of the
+knockoff variables is straightforward (and moderately costly).
 On the other hand, \textit{model}-X knockoffs work in higher dimensions
 but need an estimation of the distribution that generated the data,
 which is a hard problem in general.
@@ -48,7 +48,8 @@ high dimensional setting.
 In this section, let $(\cX,\, \cY)$ be a pair of random variables,
 $\cX$ being composed of $p$ features,
 and $\cY$ the associated target in $\R$.
-We suppose that the feature matrix and the target vector $(X,\, \yy)$ are composed of samples from $(\cX,\, \cY)$.
+We suppose that the feature matrix and the target vector $(X,\, \yy)$
+are composed of independent samples from $(\cX,\, \cY)$.
 
 \subsection{General case}\label{subsec:general_case}
 
@@ -179,9 +180,9 @@ but a wide variety of choices is possible as will be shown.
 A statistics function $\omega \colon \R^{n \times 2p} \times \R^n \to \R^p$
 is said to follow the flip-sign property if for any $S \subseteq \fset$ and any $j \in \fset$,
 \begin{equation*}
-    \omega_j\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
-        -\omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{if $j \in S$.}\\
-        \omega_j\big( \big[ X, \tX \big],\, \yy \big) &\quad\text{otherwise.}
+    \omega_j\big( \big[ X,\, \tX \big]_{\swap(S)},\, \yy \big) = \begin{cases*}
+        -\omega_j\big( \big[ X,\, \tX \big],\, \yy \big) &\quad\text{if $j \in S$.}\\
+        \omega_j\big( \big[ X,\, \tX \big],\, \yy \big) &\quad\text{otherwise.}
     \end{cases*}
 \end{equation*}
 \end{definition}
@@ -197,7 +198,7 @@ The idea is to build statistics for each original and each knockoff feature, and
     \item First construct statistics $[ \zz; \tilde{\zz} ] = \zeta\big( \big[ X,\, \tX \big],\, \yy \big)$
         with some function $\zeta \colon \R^{n \times 2p} \times \R^n \to \R^{2p}$ satisfying
         \begin{equation}\label{eq:swap_cond}
-        [ \zz; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X, \tX \big]_{\swap(S)},\, \yy \big)
+        [ \zz; \tilde{\zz} ]_{\swap(S)} = \zeta\big( \big[ X,\, \tX \big]_{\swap(S)},\, \yy \big)
         ,\quad
         \forall S \subseteq \fset
         \end{equation}
@@ -212,7 +213,7 @@ Basically any antisymmetric function $a_j$ could work, but some choices lead to 
 Here are a few examples of mappings:
 \begin{itemize}
     \item $w_j = z_j - \tilde{z}_j$ (experimentally gives highest power in many cases)
-    \item $w_j = \max(z_j, \tilde{z}_j) \times \sign(z_j - \tilde{z}_j)$ (first proposed by~\cite{fixed_x_knockoffs})
+    \item $w_j = \max(z_j, \tilde{z}_j) \cdot \sign(z_j - \tilde{z}_j)$ (first proposed by~\cite{fixed_x_knockoffs})
     \item $w_j = \log\frac{z_j}{\tilde{z}_j}$
 \end{itemize}
 As for the function $\zeta$, it only needs to satisfy the \emph{swap} property~\ref{eq:swap_cond}.
@@ -229,7 +230,7 @@ suggest to use the Lasso Signed Max (LSM) statistics defined as follows.
     ,\qquad\quad
     \hat{\bbeta}(\lambda) =
     \underset{\bb}{\argmin}\;
-    \frac{1}{2}\big\lVert \yy - \big[ X, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
+    \frac{1}{2}\big\lVert \yy - \big[ X,\, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
 \end{equation}
 The vector $\hat{\bbeta}(\lambda) \in \R^{2p}$ contains the coefficients of a Lasso model
 with penalty coefficient $\lambda > 0$.
@@ -240,8 +241,9 @@ It makes sense to use the first point where the coefficient $\beta_j$ becomes no
 as a significance metric for each individual feature $j$.
 In addition, the algorithm LARS is able to compute that value pretty efficiently~\citep{lars_complexity}.
 
-Another possibility proposed by~\cite{model_x_knockoffs} is to train a plain Lasso estimator.
-Here again, the LARS algorithm allows to cross-validate the value $\lambda$ efficiently.
+Another possibility proposed by~\cite{model_x_knockoffs} is to train a plain Lasso estimator
+and keep its coefficient in absolute value.
+Here again, the LARS algorithm allows to cross-validate the penalty $\lambda$ efficiently.
 Experimentally, these statistics often give remarkable results in terms of power.
 
 More generally, the coefficients in absolute value of any reasonable regressor
@@ -253,9 +255,9 @@ When the model has hyper-parameters, those are typically tuned using cross-valid
 
 \section{Selection thresholds}\label{sec:kfs}
 
-The selection itself requires the computation of a data-dependent threshold $\tau$
+The selection itself requires the constitution of a data-dependent threshold $\tau$
 conditioned by the target FDR $\fdrtarget \in \zoint$.
-In the end, only the features $j$ whose statistics $w_j$ is above the threshold are selected.
+In the end, only the features $j$ whose statistics $w_j$ are above the threshold will be selected.
 \begin{equation}
     \hat{\cS} = \left\{ j \mid w_j \geq \tau \right\}
 \end{equation}
@@ -266,16 +268,16 @@ namely \emph{knockoff} and \emph{knockoff+}.
 They control the modified FDR (as defined below) and the FDR respectively.
 \begin{definition}\label{def:mfdr}
 Given an estimate $\hat{\cS}$ of $\cS$ and a desired false discovery rate target $q \in [0, 1]$,
-we define the modified $\fdr$ as follows:
+the modified $\fdr$ is defined as follows:
 \begin{equation*}
     \mfdr = \E{
         \frac
-            {\abs{\left\{ j \mid j \in \hat{\cS} \setminus \cS \right\}}}
+            {\big\lvert \hat{\cS} \setminus \cS \big\rvert}
             {\lvert\hat{\cS}\rvert + 1 / q}
     }
 \end{equation*}
 \end{definition}
-Since $0 \leq q \leq 1$, $\mfdr$ as defined in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
+Since $0 \leq q \leq 1$, $\mfdr$ as described in~\ref{def:mfdr} is always smaller than the actual $\fdr$.
 It means that controlling the $\mfdr$ is less restrictive than controlling the $\fdr$,
 and the $\fdr$ could potentially be much larger than the $\mfdr$.
 But if the target threshold $q$ is not too small, and if many features are selected by the procedure,
@@ -283,7 +285,7 @@ the modified version of the FDR is close enough to the actual $\fdr$.
 Being less restrictive by controlling only the $\mfdr$ can greatly improve the power
 of the selection.
 
-The only difference between the \emph{knockoff} and the \emph{knockoff+} procedures is the selection threshold $\tau$.
+The only difference between the \emph{knockoff} and \emph{knockoff+} procedures is the selection threshold $\tau$.
 \begin{definition}
     (knockoff and knockoff+ thresholds)
     Given the statistics $\ww \in \R^p$ computed from $X$ and $\tX$,
@@ -292,15 +294,15 @@ The only difference between the \emph{knockoff} and the \emph{knockoff+} procedu
         \tau &=
         \min\left\{
             t > 0 \mid \frac
-                { \abs{\left\{ j \mid w_j \leq -t \right\}} }
-                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+                { \#\left\{ j \mid w_j \leq -t \right\} }
+                { \#\left\{ j \mid w_j \geq t \right\} }
             \leq q
         \right\}\label{eq:knock_thres}\\[7pt]
         \tau^+ &=
         \min\left\{
             t > 0 \mid \frac
-                { 1 + \abs{\left\{ j \mid w_j \leq -t \right\}} }
-                { \abs{\left\{ j \mid w_j \geq t \right\}} }
+                { 1 + \#\left\{ j \mid w_j \leq -t \right\} }
+                { \#\left\{ j \mid w_j \geq t \right\} }
             \leq q
         \right\}\label{eq:knockp_thres}
     \end{align}
@@ -326,7 +328,7 @@ in the same way the BH procedure usually controls the FDR even when the tests ar
 \section{Bottlenecks}\label{sec:kb}
 
 Despite the nice theoretical guarantees on the $\fdr$ control that the knockoff procedure proposes,
-two bottlenecks hurt its performances in the high dimensional context.
+two bottlenecks hurt its performances in the high-dimensional context.
 
 \subsection{Knockoffs construction}\label{subsec:bot_sdp}
 
@@ -342,7 +344,7 @@ The control guarantees hold for any $\bs \in \R^p$ such that the covariance matr
 \end{proposition}
 \begin{proof}
     Note $D = \diag\bs$.
-    Its Schur complement $\Omega_{/\Sigma}$ (see Appendix~\ref{sec:schur_complement}) is given by
+    The Schur complement $\Omega_{/\Sigma}$ (see Appendix~\ref{sec:schur_complement}) is given by
     $\Omega_{/\Sigma} = 2D - D\Sigma^{-1}D$.
     From this, we get that $\Omega \succeq \0$ is equivalent to $\Omega_{/\Sigma} \succeq \0$.
     Define $M$ and its Schur complements as follows
@@ -359,7 +361,7 @@ The control guarantees hold for any $\bs \in \R^p$ such that the covariance matr
     \end{equation*}
     Finally, $\Omega_{/\Sigma} = M_{/\Sigma}$ is p.s.d.\ if and only if both $\Sigma - \frac{1}{2}D$ and $D$ are p.s.d.
 \end{proof}
-The FDR control holds for \emph{any} $\bs$ satisfying this constraint,
+Even if we could use \emph{any} $\bs$ satisfying this constraint,
 but some solutions lead to a better statistical power.
 As will be shown in Chapter~\ref{ch:sdp},
 finding good solutions amounts to solving a SDP which becomes intractable when $p$ is large.
@@ -370,7 +372,7 @@ The computation of the statistics presented in Section~\ref{sec:ksc}
 on the concatenated feature matrix $\big[ X,\, \tX \big]$ may also become an obstacle when $n$ and $p$ grow.
 This comes from the fact that most estimators have hyper-parameters that need to be cross-validated.
 The cross-validation step may multiply the training time by several order of magnitudes.
-On top of that, most estimators have a training time complexity that is more than linear in the number of features.
+On top of that, many estimators have a training time complexity that is more than linear in the number of features.
 
 \bigbreak
 These two bottlenecks make the use of the knockoff procedure
@@ -401,7 +403,7 @@ The implementation is deliberately compatible with the Scikit-Learn ecosystem~\c
 so that estimators may be combined and used in a pipeline object.
 It provides 3 main components,
 namely a knockoffs generator \code{KnockoffsGenerator},
-statistics computations utility functions,
+statistics computation utility functions,
 and a selector \code{BaseKnockoffsSelector}.
 The constituent \code{KnockoffsGenerator} subclasses
 \code{BaseEstimator} and \code{TransformerMixin} from Scikit-Learn,
