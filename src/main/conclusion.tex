@@ -18,3 +18,9 @@ Experiments show that this approach keeps a reasonably high power.
 
 Applications to a wider range of datasets, such as fMRI or will be explored in future work.
 GPU acceleration
+
+When computing statistics with sparse naive Bayes,
+the sparsity level $k$ has to be tuned,
+and the calculations have to be done from scratch for every single value.
+For the Lasso, the penalty coefficient $\lambda$ can efficiently be tuned with the LARS algorithm~\cite{lars}.
+We would like to find a similar algorithm allowing t

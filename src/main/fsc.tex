@@ -2,39 +2,86 @@
 
 As described in Chapter~\ref{ch:knockoffs},
 the computation of statistics on the concatenated feature matrix
-is a key step in the knockoff selection process.
-As it has been discussed, a large variety of statistics control the FDR,
+is a key step of the knockoff selection process.
+We discussed in Section~\ref{sec:ksc} the fact that a large variety of statistics control the FDR,
 provided that the \textit{flip-sign} property~\ref{def:flip_sign} is satisfied.
-However, the power is highly impacted depending on how suitable the statistics are for the data.
-We also suppose that the knockoffs were generated respecting the conditions\dots.
-Experimentally, it appears that for most tasks the coefficients of a cross-validated Lasso
+However, the power is highly impacted depending on how suitable for the data the statistics are.
 
 In this chapter, we note $X \in \R^{n \times p}$ the original design matrix,
-and we suppose that we sampled valid knockoff features $\tX\in \R^{n \times p}$.
+and we suppose that we sampled valid knockoff features $\tX\in \R^{n \times p}$
+(respecting conditions~\ref{itm:cond_swap} and~\ref{itm:cond_indep}).
+The target vector is noted $\yy \in \R$.
 
 \section{Lasso is good but slow}\label{sec:}
 
 Experimentally, cross-validating a regressor (or classifier) against the data $\big[ X, \tX \big]$,
 keeping its coefficients in absolute value,
 and aggregating them as described in Subsection~\ref{subsec:ksa} yields excellent results.
-Most classical regression models scale pleasantly as $p$ increases;
-$\cO\left( n \cdot p \right)$ for Lasso and logistic regression,
-$\cO\left( n \cdot p^2 \right)$ for SVMs.
-But when the number of features is several thousands or more,
+Most classical regression models scale nicely as $p$ increases;
+$\cO\left( n \cdot p \right)$ for Lasso~\citep{lasso} and logistic regression~\citep{logistic_regression},
+$\cO\left( n \cdot p^2 \right)$ for support vector machines (SVM)~\citep{svm}.
+In practice, the Lasso is observed to produce the highest statistical power in many cases.
+But all of these models have hyper-parameters that need to be tuned,
+usually through cross-validation,
+and with a naive grid search.
+Tuning the estimator tends to lead to a higher power than picking ad hoc hyper-parameters,
+but it increases the time complexity of the training phase by a lot.
+Figure~\ref{fig:lasso_times} shows the time required a tune the penalty coefficient of a Lasso model,
+using the algorithm LARS~\citep{lars}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
+    \caption{
+        Convergence time to cross-validate the parameter $\lambda$ of a Lasso model,
+        as a function of the feature space dimension $p$ (original + knockoff features).
+        Benchmark done in Python using the class \code{LassoCV} from \code{sklearn.linear\_model}.
+        The data is the one described in Section~\ref{subsec:genetic_data},
+        and contains $2\,695$ samples.
+    }
+    \label{fig:lasso_times}
+\end{figure}
+For $5\,000$ features (in total, with the knockoffs),
+it already needs $\approx 20$ minutes to compute the statistics.
+
+Many datasets, like the ones we will consider for experiments in Chapter~\ref{ch:exp},
+contain dozens of thousands of features.
+For this reason, we try to develop faster techniques and statistics in the following sections
+(potentially at the cost of a lower power).
 
 \section{Multi-stage procedures}\label{sec:multi_stage}
 
 A natural way to address the high number of features is to split the selection into several steps.
 If $p$ is high,
-you may want to reduce the number of features by cutting a large proportion with a cheap and fast procedure first,
+you may want to reduce the number of features by cutting a large proportion with a cheap and fast procedure first
+(for example univariate regression),
 and use more sophisticated methods afterwards on the remaining set of features.
-Multi-stage procedure~\cite{multi_stage_fdr}
+However, methods that control the FDR like BH, BY, and the knockoffs are not guaranteed to work in this
+feature truncation approach anymore.
+A modification of the BH procedure is proposed by~\cite{multi_stage_fdr}
+to address the issue of this multi-stage evaluation.
+They prove that their process effectively controls the FDR on the entire set of features, as desired.
 
-\section{Fast statistics}\label{sec:a}
-
-From now, only binary classification problems will be considered, where the label $y$ takes values
-in $\left\{ \cC^+,\, \cC^- \right\}$.
+In our Python implementation mentioned in Section~\ref{sec:python_implementation},
+we propose a \code{MultiStepsSelector} class to do that kind of multi-steps selections.
+We are well-aware that no theoretical guarantee exists in the case of the knockoff procedure.
+But we observed on synthetic data that in practice the false discovery proportions obtained
+were not too far away from the target value.
+Making a theoretical analysis will be the subject of future work.
 
 \section{Sparse naive Bayes}\label{sec:snb}
 
-\input{main/snb.tex}
+\input{main/snb}
+
+\section{Other fast statistics}\label{sec:a}
+
+\subsection{Based on the Lasso Signed Max}\label{subsec:based_on_lsm}
+
+Remember the Lasso Signed Max (LSM) statistics defined in~\ref{eq:lsm}.
+\begin{equation}\label{eq:lsm}
+    z_j = \sup\{\lambda \mid \hat{\bbeta}_j(\lambda) \neq 0\}
+    ,\qquad\quad
+    \hat{\bbeta}(\lambda) =
+    \underset{\bb}{\argmin}\;
+    \frac{1}{2}\big\lVert \yy - \big[ X, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
+\end{equation}
+
