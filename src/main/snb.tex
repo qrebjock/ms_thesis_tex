@@ -26,7 +26,7 @@ The goal is to explain $\yy$ given $X$, that is, finding the posterior probabili
 From these probabilities, a new observation $\xx \in \R^p$ is classified according to the highest
 posterior probability between the two classes
 \begin{equation}\label{eq:nb_inference}
-y\left( \xx \right) = \underset{\cC \in \bclasses}{\argmax} \Pr\left( \cC \mid \xx \right)
+y\left( \xx \right) = \underset{\cC \in \bclasses}{\argmax} \Pr\left( \cY = \cC \mid \cX = \xx \right)
 \end{equation}
 To do so, we combine the use of Bayes rule and make the (very) naive assumption that
 all the features are independent given the class, that is
@@ -173,7 +173,7 @@ No matter what model parametrized by $\btheta$ was chosen,~\ref{eq:nb_inference}
 \end{align*}
 In the cases of \emph{bernoulli} (\ref{subsubsec:bnb}) and \emph{multinomial} (\ref{subsubsec:mnb}) naive Bayes,
 there exist $v \in \R$ and $\ww \in \R^p$ such that $y = \sign(v + \ww^\top\xx)$.
-In these two special cases, the decision boundary is a hyperplane (which doesn't happen for gaussian naive Bayes).
+In these two special cases, the decision boundary is linear (which doesn't happen for gaussian naive Bayes).
 For both of them $v$ has the same value, and by noting $\ww_b$ and $\ww_m$ the weights for the bernoulli
 and the multinomial case respectively, we have
 \begin{equation*}
@@ -200,7 +200,7 @@ Let $0 \leq k \leq p$ be a desired level of sparsity.
 We wish to train a naive Bayes classifier whose decision boundary depends on at most $k$ features.
 As shown in the previous section~\ref{subsubsec:nb_bound},
 for both bernoulli and multinomial naive Bayes
-there exist $v \in \R$ and $\ww \in \R^p$ such that $y(\xx) = \sign(v + \ww^\top\xx)$ for a data point $\xx\in\R^p$.
+there exist $v \in \R$ and $\ww \in \R^p$ such that $y(\xx) = \sign(v + \ww^\top\xx)$ for any data point $\xx\in\R^p$.
 Furthermore, the $j$th entry of the decision vector $\ww$ is null if and only if $\btheta^-_j = \btheta^+_j$,
 where $\btheta^-$ and $\btheta^+$ are the parameters of the loss functions $\lglh_b$ and $\lglh_m$.
 Naturally, imposing the constraint $\norm{\btheta^+ - \btheta^-}_0 \leq k$ in the optimization problems
@@ -268,11 +268,9 @@ stated in Theorem~\ref{th:msnb}.
     Define $\phi_k : \alpha \mapsto s_k(\hh(\alpha)) + C$ where $C$ is some constant,
     $s_k$ the sum of the k largest values of a vector, and
     \begin{equation*}
-        \begin{split}
-            \hh(\alpha) &= \ff_+ \odot \log \ff_+ + \ff_- \odot \log \ff_-
-            - (\ff_+ + \ff_-) \odot \log (\ff_+ + \ff_-)\\
-            &\qquad - \ff_+ \log \alpha - \ff_- \log (1 - \alpha)
-        \end{split}
+            \hh(\alpha) = \ff_+ \odot \log \ff_+ + \ff_- \odot \log \ff_-
+                - (\ff_+ + \ff_-) \odot \log (\ff_+ + \ff_-)
+                - \ff_+ \log \alpha - \ff_- \log (1 - \alpha)
     \end{equation*}
     $\phi_k$ is the dual of~\ref{eq:msnb} and can be minimized very quickly (with bisection for example)
     as it is a one-dimensional convex function.

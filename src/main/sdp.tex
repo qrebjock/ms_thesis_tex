@@ -29,7 +29,7 @@ is indeed a covariance matrix (semidefinite positive).
 As shown in Proposition~\ref{prop:omega_psd},
 this matrix is semidefinite positive if and only if $\0_{p \times p} \preceq \diag \bs \preceq 2 \Sigma$.
 The first inequality clearly holds if all the entries of $\bs$ are positive.
-It is however trickier to identify all vectors $\bs$ satisfying the second one.
+It is however trickier to identify all vectors satisfying the second one.
 
 In this chapter, we show why the choice of $\bs$ is important and how to efficiently find an appropriate one
 in the high-dimensional setting.
@@ -43,7 +43,7 @@ In the remaining, we note $\Sigma$ the true covariance and $\hat{\Sigma}$ its es
 
 For any psd matrix $A \in \R^p$, $A + \alpha I_{p \times p}$ has the same eigenvalues as $A$, but shifted by $\alpha$.
 It gives a fast and simple way to find a feasible $\bs$:
-setting all the entries to the smallest eigenvalue of $\tcove$ (\textit{equi}-correlated knockoffs).
+setting all the entries to the smallest eigenvalue of $\tcove$ (which is called \textit{equi}-correlated knockoffs).
 \begin{equation}\label{eq:equi}
     s_j = 2\lambda_{\min}(\cove)
     \quad\text{for all}\quad 0 \leq j \leq p
@@ -61,7 +61,7 @@ to understand why it is unprofitable for the selection procedure.
 If $\tcX$ is built according to~\ref{eq:conditional_gaussian_knockoffs2}, it satisfies
 \begin{equation*}
     \begin{cases}
-        \cov(\tcX_j,\, \tcX_{j'}) = \cov(\cX_j,\, \cX_{j'}) \text{ for all } j,\,j'\\
+        \cov(\tcX_j,\, \tcX_{j'}) = \cov(\cX_j,\, \cX_{j'}) \text{ for all } j,\, j'\\
         \cov(\cX_j,\, \tcX_{j'}) = \cov(\cX_j,\, \cX_{j'}) \text{ for all } j \neq j'\\
         \cov(\cX_j,\, \tcX_j) = \cov(\cX_j,\, \cX_j) - s_j \text{ for all } j
     \end{cases}
@@ -168,7 +168,7 @@ It may very well be executed in the block-diagonal arrangement depicted in the p
 
 \paragraph{Notations.}
 Let $M \in \R^{p \times p}$.
-Given two sets of indices $\cI,\,\cJ \in \fset$,
+Given two sets of indices $\cI,\, \cJ \in \fset$,
 we note $M_{\cI,\,\cJ}$ the $\abs{\cI} \times \abs{\cJ}$ matrix obtained by keeping
 the $\abs{\cI}$ rows and $\abs{\cJ}$ columns indexed by $\cI$ and $\cJ$ respectively.
 By convenience, an integer $j$ denotes the set $\left\{ j \right\}$ and $j^c$ $\fset \setminus \left\{ j \right\}$
@@ -233,7 +233,7 @@ For any $j \in \fset$, M is psd if and only if both conditions in~\ref{eq:psd_sc
 
 Using the characterization~\ref{eq:psd_schur_permutation},
 it appears that the feasibility of $\bs$ in SDP~\ref{eq:sdp} is equivalent to the three following conditions,
-for any $j \in \fset$
+for any $j \in \fset$.
 \begin{equation}\label{eq:schur_sdp_constraints}
     \tcove \succeq \diag \bs \succeq \0
     \iff
@@ -272,7 +272,7 @@ we absorb the constraint $\tcove \succeq \bs$ into the objective by penalizing s
 too close to the feasibility frontier, as described by~\citet[§11.3]{convex_optimization}.
 It depends on the additional term
 $\lambda \cdot \log\det\big( \tcove - \diag\bs \big)$
-for some coefficient $\lambda > 0$:
+for some coefficient $\lambda > 0$.
 \begin{equation}\label{eq:sdp_log_barrier}
     \underset{\bs \in \R^p}{\argmax}\;\,
     \sum_{j = 1}^p s_j
@@ -388,7 +388,7 @@ On top of that,
 if $p$ is larger than $20\,000$ it becomes challenging to solely store the full matrix in the memory
 of a standard computer.
 Hopefully, big data matrices and especially correlation matrices often have an underlying low-rank structure,
-or at least can be approximated adequately by such a low-rank estimate~\citep{big_data_low_rank}.
+or at least can be approximated adequately by such low-rank estimates~\citep{big_data_low_rank}.
 An intuitive explanation is that only a small number of latent features explain most of the data.
 
 \subsection{Factor model}\label{subsec:factor_model}
@@ -438,9 +438,10 @@ in the case where computing the exact SVD decomposition of $X$ is too costly,
 when $X$ doesn't even fit in memory,
 or simply to speed-up the factorization process.
 Without the full SVD, computing the optimal shrinkage coefficient $\delta$ is more costly
-but can be done in $\cO\left( n^2 \cdot p \right)$ steps and without extra memory.
+but can be done in $\cO\left( n^2 \cdot p \right)$ steps and without extra memory
+(or in $\cO\left( n \cdot p \right)$ steps via randomized methods).
 Rather than simply computing a low-rank approximation $U \Lambda U^\top$ and then $D$,
-these randomized estimations allow to achieve alternating descent on $U$ and $D$ without constructing $\cove$.
+these randomized SVD estimations allow to achieve alternating descent on $U$ and $D$ without constructing $\cove$.
 Nonetheless, one single step seems to be often very close to a local minimum.
 We implement such algorithms and find that they scale moderately well with $n$ and $p$.
 
@@ -457,7 +458,7 @@ The complexity of Algorithm~\ref{alg:coordinate_ascent_log_barrier} can be drast
 to $\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$
 by taking advantage of the special structure of $\cove$.
 Remember that at each iteration $j$,
-only the coordinate $j$ of $\bs$ is updated
+only the coordinate $j$ of $\bs$ is updated.
 \begin{equation*}
     s_j \leftarrow \max(\alpha^\star,\, 0)
     \quad\text{with}\quad
@@ -577,7 +578,7 @@ In this section, we detail briefly how to sample knockoffs $\tcX$ once
 a feasible solution $\bs$ is computed,
 and in the special case where $\cove = D + U\Lambda U^\top$.
 As shown in Section~\ref{subsec:gaussian_knockoffs},
-$\tcX$ is sampled from the following conditional distribution
+knockoffs are sampled from the following conditional distribution
 \begin{equation}\label{eq:conditional_gaussian_knockoffs3}
     \tcX \mid \cX \sim \cN\left( \bupsilon, \Upsilon \right)
     ,\qquad\text{where}\quad
@@ -605,7 +606,7 @@ As $\Upsilon$ is a $p \times p$ matrix we may not want to store it in memory,
 nor compute a Cholesky factorization (which takes $\cO\left( p^3 \right)$ steps).
 We show here how to factorize $\Upsilon$ in a cheap way,
 requiring only $\cO\left( k \cdot p \right)$ memory and $\cO\left( k\cdot p^2 \right)$ operations.
-We note $S = \diag\bs$, so that$\Upsilon = 2S - S\cove^{-1}S$.
+We note $S = \diag\bs$, so that $\Upsilon = 2S - S\cove^{-1}S$.
 Using the low-rank structure $\cove = D + U\Lambda U^\top$,
 the Woodbury formula (see Appendix~\ref{sec:sherman}) gives
 \begin{align*}
@@ -628,7 +629,7 @@ Then,
 \begin{equation*}
     \Upsilon = H \left( I_{p \times p} + PP^\top \right) H^\top
 \end{equation*}
-$\left( I_{p \times p} + PP^\top \right)$ can be factorized in the following way.
+The matrix $\left( I_{p \times p} + PP^\top \right)$ can be factorized in the following way.
 Note
 \begin{equation*}
     W = \left(I_{k \times k} + \sqrt{I_{k \times k} + P^\top P}\right)^{-1} \in \R^{k \times k}

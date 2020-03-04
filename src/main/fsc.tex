@@ -20,17 +20,17 @@ and aggregating them as described in Subsection~\ref{subsec:ksa} yields excellen
 Most classical regression models scale nicely as $p$ increases;
 $\cO\left( n \cdot p \right)$ for Lasso~\citep{lasso} and logistic regression~\citep{logistic_regression},
 $\cO\left( n \cdot p^2 \right)$ for support vector machines (SVM)~\citep{svm}.
-In practice, the Lasso is observed to produce the highest statistical power in many cases.
+In practice, the Lasso is observed to produce the highest statistical power in many cases~\citep{model_x_knockoffs}.
 But all of these models have hyper-parameters that need to be tuned,
 usually through cross-validation,
 and with a naive grid search.
 Tuning the estimator tends to lead to a higher power than picking ad hoc hyper-parameters,
 but it increases the time complexity of the training phase by a lot.
-Figure~\ref{fig:lasso_times} shows the time required a tune the penalty coefficient of a Lasso model,
+Figure~\ref{fig:lasso_times} shows the time required to tune the penalty coefficient of a Lasso model,
 using the algorithm LARS~\citep{lars}.
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/low_rank_times.pdf}
+    \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/lasso_cv_times.pdf}
     \caption{
         Convergence time to cross-validate the parameter $\lambda$ of a Lasso model,
         as a function of the feature space dimension $p$ (original + knockoff features).
@@ -41,7 +41,7 @@ using the algorithm LARS~\citep{lars}.
     \label{fig:lasso_times}
 \end{figure}
 For $5\,000$ features (in total, with the knockoffs),
-it already needs $\approx 20$ minutes to compute the statistics.
+it already needs $\approx 12$ minutes to compute the statistics.
 
 Many datasets, like the ones we will consider for experiments in Chapter~\ref{ch:exp},
 contain dozens of thousands of features.
@@ -52,10 +52,11 @@ For this reason, we try to develop faster techniques and statistics in the follo
 
 A natural way to address the high number of features is to split the selection into several steps.
 If $p$ is high,
-you may want to reduce the number of features by cutting a large proportion with a cheap and fast procedure first
+you may want to reduce the number of features by cutting
+a large proportion of them with a cheap and fast procedure first
 (for example univariate regression),
 and use more sophisticated methods afterwards on the remaining set of features.
-However, methods that control the FDR like BH, BY, and the knockoffs are not guaranteed to work in this
+However, methods that control the FDR, like BH, BY, and the knockoffs, are not guaranteed to work with this
 feature truncation approach anymore.
 A modification of the BH procedure is proposed by~\cite{multi_stage_fdr}
 to address the issue of this multi-stage evaluation.
@@ -74,14 +75,40 @@ Making a theoretical analysis will be the subject of future work.
 
 \section{Other fast statistics}\label{sec:a}
 
-\subsection{Based on the Lasso Signed Max}\label{subsec:based_on_lsm}
-
 Remember the Lasso Signed Max (LSM) statistics defined in~\ref{eq:lsm}.
 \begin{equation}\label{eq:lsm}
     z_j = \sup\{\lambda \mid \hat{\bbeta}_j(\lambda) \neq 0\}
     ,\qquad\quad
     \hat{\bbeta}(\lambda) =
-    \underset{\bb}{\argmin}\;
-    \frac{1}{2}\big\lVert \yy - \big[ X, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
+        \underset{\bb}{\argmin}\;
+        \frac{1}{2}\big\lVert \yy - \big[ X,\, \tX \big]\bb \big\rVert_2^2 + \lambda\norm{\bb}_1
 \end{equation}
+The more significant the feature $j$ is,
+the higher the first value of $\lambda$ such that it enters the model will be.
+That kind of statistics relying on a penalty could be used for other models than the Lasso,
+and be potentially easier to compute.
+Another possibility is to replace the $\ell_1$ penalty by an $\ell_0$ one.
+We find that when this is done for bernoulli and gaussian naive Bayes,
+and for centroid classifiers (depicted in Subsection~\ref{subsubsec:centroids}),
+the statistics $z_j = \sup\{\lambda \mid \hat{\bbeta}_j(\lambda) \neq 0\}$
+can be computed in closed-form.
 
+As a matter of example, for the $\ell_2$ centroids penalized with the $\ell_0$ norm,
+the optimization problem is the following one.
+\begin{equation}\label{eq:penalized_centroids_averages}
+    \hat{\bbeta}(\lambda) = \argmin_{( \btheta^+,\, \btheta^-)}
+        \frac{1}{n^+} \sum_{i \in \cI^+} \big\lVert \xx_i - \btheta^+ \big\rVert^2_2
+        + \frac{1}{n^-} \sum_{i \in \cI^-} \big\lVert \xx_i - \btheta^- \big\rVert^2_2
+        + \lambda \norm{\btheta^+ - \btheta^-}_0
+\end{equation}
+We find that
+\begin{align*}
+    z_j = \frac{1}{2}(\bar{\xx}^+_j - \bar{\xx}^-_j)^2
+\end{align*}
+There is a very cheap way to compute such values with $\ell_1$ norms in~\ref{eq:penalized_centroids_averages},
+with a $\ell_0$ penalization of $\lambda$.
+
+\bigbreak
+All these fast heuristics are available in our Python impplementation.
+They obviously lead to a lower statistical power than more expressive models in general.
+We show experiments with these statistics in Chapter~\ref{ch:exp}.

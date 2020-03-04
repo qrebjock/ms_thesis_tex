@@ -20,11 +20,12 @@ and figure out afterwards which of them prove to be valuable.
 On top of that, measuring covariates is often simpler than labeling samples with the right category,
 as the latter requires human efforts and can hardly be automatized.
 For that reason, many datasets have more features than samples
-and it is especially the case in some fields like biology.
-\cite{statistical_inference_genome}
-For instance, genomic and fMRI data contain a huge amount of features but relatively low number of patients.
-In this high dimension setup, feature selection and false discovery rate control are particularly challenging
-because estimations based on samples suffer from a high variance.
+and it is especially the case in some fields like biology~\citep{statistical_inference_genome},
+where genomic and fMRI data contain a huge amount of features but a relatively low number of patients.
+In this high dimension setup, feature selection and false discovery rate control are particularly challenging.
+The Benjamini–Hochberg procedure requires estimates of independent $p$-values for each feature,
+which rapidly becomes hard when the dimension increases,
+or may even be impossible.
 
 Recently~\citet{fixed_x_knockoffs} introduced the knockoffs framework,
 which is a set of procedures capable of performing feature selection,
@@ -32,7 +33,7 @@ and that are proven to theoretically control the false discovery rate under mere
 The key idea is to build a knockoff (that is, fake) feature for each authentic feature,
 and compare their significance against a statistical model.
 This framework was revisited and extended to a more general inference setting~\citep{model_x_knockoffs},
-allowing in particular to perform feature selection in the high dimension case,
+allowing notably to perform feature selection in the high dimension case,
 that is when the number of features is larger than the number of samples.
 The generality of this selection procedure
 and the fact that many statistical models can be plugged in make it particularly appealing.
@@ -47,17 +48,21 @@ Constructing quality knockoffs relies on solving a SDP problem
 which quickly becomes intractable as the dimension increases.
 We propose a coordinate ascent approach with low-rank approximations
 that both theoretically and experimentally scale well with the number of features.
+Regarding test statistics, recent feature selection models~\citep{sparse_naive_bayes, sparse_center_classifiers}
+empirically get close to the performances of the Lasso~\citep{lasso} at very cheap computational cost.
+In the end, we are able to apply the knockoff framework
+in a linear time complexity with respect to the number of dimension.
 
 This master thesis is organized as follows.
-Chapter~\ref{ch:fs} introduces the concept of feature selection and
+Chapter~\ref{ch:fs} introduces the concepts of feature selection and
 false discovery rate control, along with a few techniques that are usually employed.
 Chapter~\ref{ch:knockoffs} details the knockoff selection procedure developed by Barber-Candès
-and principal theoretical guarantees.
+and its principal theoretical guarantees.
 In Chapter~\ref{ch:sdp},
 we focus on the knockoff features constitution part
 and propose a log-barrier coordinate ascent algorithm to solve the main bottleneck of the construction.
-We show that low-rank covariance approximations
-Chapter~\ref{ch:fsc} introduces a sparse version of naive Bayes that scales linearly in the number of features against which
-it is trained.
+We show that low-rank covariance approximations considerably speed up the calculations.
+Chapter~\ref{ch:fsc} addresses the problem of statistics computation,
+and presents a sparse version of naive Bayes, among other things.
 Finally, in Chapter~\ref{ch:exp} we detail experiments performed on genetic data and prove the scalability
 and efficiency of our methods.
