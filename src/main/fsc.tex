@@ -35,7 +35,7 @@ using the algorithm LARS~\citep{lars}.
         Convergence time to cross-validate the parameter $\lambda$ of a Lasso model,
         as a function of the feature space dimension $p$ (original + knockoff features).
         Benchmark done in Python using the class \code{LassoCV} from \code{sklearn.linear\_model}.
-        The data is the one described in Section~\ref{subsec:genetic_data},
+        The data is the one described in Section~\ref{sec:genetic_data},
         and contains $2\,695$ samples.
     }
     \label{fig:lasso_times}
@@ -105,7 +105,7 @@ We find that
 \begin{align*}
     z_j = \frac{1}{2}(\bar{\xx}^+_j - \bar{\xx}^-_j)^2
 \end{align*}
-There is a very cheap way to compute such values with $\ell_1$ norms in~\ref{eq:penalized_centroids_averages},
+There is also a very cheap way to compute such values with $\ell_1$ norms in~\ref{eq:penalized_centroids_averages},
 with a $\ell_0$ penalization of $\lambda$.
 
 \bigbreak

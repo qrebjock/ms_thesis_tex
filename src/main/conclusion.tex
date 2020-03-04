@@ -5,7 +5,7 @@
 
 In this master thesis,
 we investigated high-dimensional feature selection
-in the gaussian knockoffs framework setting.
+in the gaussian knockoffs framework setting~\citep{model_x_knockoffs}.
 In high dimension, nearly all the steps of the selection procedure become challenging,
 and in particular the construction of the knockoff features,
 and the computation of statistics associated to each aggregated feature.
@@ -13,14 +13,27 @@ and the computation of statistics associated to each aggregated feature.
 Building knockoffs inducing a high statistical power relies on the optimization of a semidefinite program.
 Hopefully, the structure and the simple bounds of this SDP allow us to perform coordinate ascent which
 is guaranteed to converge in this case.
-On top of that, a low-rank approximation structure speeds up the computations by several order of magnitude.
-Experiments show that this approach keeps a reasonably high power.
+On top of that, a low-rank covariance approximation speeds up the computations by several order of magnitude.
+Experiments show that a reasonably high power is preserved by this approach.
+Despite the fact that the Lasso constitutes a baseline that is hard to beat
 
-Applications to a wider range of datasets, such as fMRI or will be explored in future work.
-GPU acceleration
+We provided a Python package implementing all these algorithms,
+and took advantage of the Cython acceleration (along with BLAS and LAPACK)
+to speed up critical parts of the selection pipeline.
+We demonstrated the effectiveness of
 
-When computing statistics with sparse naive Bayes,
-the sparsity level $k$ has to be tuned,
-and the calculations have to be done from scratch for every single value.
-For the Lasso, the penalty coefficient $\lambda$ can efficiently be tuned with the LARS algorithm~\cite{lars}.
-We would like to find a similar algorithm allowing t
+From there, many questions and prospects remain open.
+For the SNB model,
+it would be valuable to find a way to compute the whole path of solutions,
+rather than optimizing them from scratch for every sparsity level.
+This wo,
+in the same way the Lasso can be cross-validated very efficiently with LARS~\cite{lars}.
+in the SNB model would constitute
+Regarding the low-rank coordinate ascent algorithm,
+we are working on fixing the numerical instabilities in the
+$\cO\left( n_\text{iters} \cdot p \cdot k^2 \right)$ version with more robust rank-1 updates.
+This algorithm could also take advantage of GPU acceleration
+as it relies heavily on matrix multiplications.
+Finally, false discovery rate control in high dimensions finds applications everywhere,
+and we would like to experiment a wider range of datasets,
+such as fMRI\@.

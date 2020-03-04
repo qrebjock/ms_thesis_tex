@@ -43,19 +43,22 @@ In practice, very good solutions are attained much faster with a larger toleranc
 
 \section{Criteo data}\label{sec:criteo_data}
 
-One-hot encoding isn't adapted to that situation.
-Another approach would be to one-hot encode for each categorical feature only the most frequent categories,
+One-hot encoding is not adapted to the Criteo data because there are too many categories.
+Another approach would be to one-hot encode only the most frequent categories for each categorical column,
 and put the rest in a category \textit{other}.
 The winners of the Kaggle competition used the hashing trick.
 It consists in choosing an encoding space size $m$,
 for example $m = 2^{20}$,
-and defining some hash function $h \colon \text{Categories} \to \left\{ 0, \dots, m - 1 \right\}$.
+and defining some hash function $h \colon \text{Categories} \to \left\{ 0,\, \dots,\, m - 1 \right\}$.
 This approach has several notable advantages.
 First, the final encoded feature space $m$ can be adapted depending on the needs and on the computing power.
-It may be used in an online fashion without a first pass
-(that would be required for one-hot encoding in order to figure out all the existing categories).
+It may be used in an online fashion without the first pass
+that would be required for one-hot encoding in order to figure out all the existing categories.
 Lastly, it naturally handles new labels in the test set that were unseen in the train set
 (which would typically need a special \textit{other} category in the one-hot encoding setting).
 Collisions between categories are likely to happen,
-and even collisions between categories from different features.
-$m = 2^{24} = 16777216$
+and even collisions between categories from different columns.
+We use
+$m = 2^{24} = 16\,777\,216$,
+and simple hash function,
+and only roughly half of the $2^{24}$ hash features were hit by the hash function.
