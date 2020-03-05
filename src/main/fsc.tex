@@ -32,7 +32,7 @@ using the algorithm LARS~\citep{lars}.
     \centering
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{figures/lasso_cv_times.pdf}
     \caption{
-        Convergence time to cross-validate the parameter $\lambda$ of a Lasso model,
+        Convergence time (in seconds) to cross-validate the parameter $\lambda$ of a Lasso model,
         as a function of the feature space dimension $p$ (original + knockoff features).
         Benchmark done in Python using the class \code{LassoCV} from \code{sklearn.linear\_model}.
         The data is the one described in Section~\ref{sec:genetic_data},
@@ -73,7 +73,7 @@ Making a theoretical analysis will be the subject of future work.
 
 \input{main/snb}
 
-\section{Other fast statistics}\label{sec:a}
+\section{Other fast statistics}\label{sec:other_fast_statistics}
 
 Remember the Lasso Signed Max (LSM) statistics defined in~\ref{eq:lsm}.
 \begin{equation}\label{eq:lsm}
@@ -109,6 +109,6 @@ There is also a very cheap way to compute such values with $\ell_1$ norms in~\re
 with a $\ell_0$ penalization of $\lambda$.
 
 \bigbreak
-All these fast heuristics are available in our Python impplementation.
-They obviously lead to a lower statistical power than more expressive models in general.
+All these fast heuristics are available in our Python implementation.
+In general, they certainly lead to a lower statistical power than more expressive models.
 We show experiments with these statistics in Chapter~\ref{ch:exp}.

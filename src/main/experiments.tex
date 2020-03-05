@@ -5,7 +5,7 @@ we present experiments demonstrating the performances of all the components deve
 
 \section{Scalability of sparse naive Bayes}\label{sec:snb_criteo}
 
-This experiment is not related to the knockoffs framework,
+This experiment is not related to the knockoff framework,
 but shows the very good scalability of sparse naive Bayes
 presented in Section~\ref{sec:snb}.
 As part of the Kaggle competition \emph{Display Advertising Challenge}\footnote{
@@ -15,8 +15,8 @@ As part of the Kaggle competition \emph{Display Advertising Challenge}\footnote{
 in mid-2014, CriteoLabs shared log data collected over one week\footnote{
     The competition's dataset can be downloaded at
     \href{https://labs.criteo.com/2014/02/download-kaggle-display-advertising-challenge-dataset/}{this address}.
-}
-whose features were undisclosed for confidentiality purposes.
+}.
+The meaning of the features was undisclosed for confidentiality purposes.
 Main characteristics of this dataset can be found in Table~\ref{tab:criteo_dataset}.
 \begin{table}[!htb]
     \centering
@@ -31,8 +31,6 @@ Main characteristics of this dataset can be found in Table~\ref{tab:criteo_datas
         Criteo dataset characteristics.
         Even though the number of features is small,
         most categorical features have millions of categories.
-        It makes the training of predicting models particularly challenging as it requires several
-        dozens of GB of memory.
     }
     \label{tab:criteo_dataset}
 \end{table}
@@ -57,7 +55,7 @@ using a Python and NumPy implementation of SNB\footnote{
 }.
 In this situation, what makes SNB particularly appealing is the fact that at no moment we need to load the full dataset
 in memory.
-We are only computing data averages whose shape are much smaller than the full matrix.
+We are only computing data averages whose shapes are much smaller than the full matrix.
 Note also that most tasks could even be distributed to speed up the computations.
 \begin{figure}
     \centering
@@ -73,6 +71,29 @@ Refer to Appendix~\ref{sec:criteo_data} for more details regarding the experimen
 
 \section{Statistical power comparison}\label{sec:power_comparison}
 
+Here is a toy example showing the effectiveness of the statistics presented in Section~\ref{sec:other_fast_statistics}
+on certain datasets.
+The \code{20 newsgroups} dataset contains approximately $18\,000$ newsgroup posts labeled in $20$ different categories.
+We keep only the posts related to \emph{medicine} and \emph{space} to make it a binary classification problem,
+and pick $5\,000$ features at random out of the $21\,368$ to make the computations faster.
+We apply the \emph{knockoff+} filter with a false discovery rate target $q = 0.2$
+with both the Lasso and the statistics described in Section~\ref{sec:other_fast_statistics}.
+With the centroids, we make the following discoveries:
+'actually', 'allergic', 'ames', 'associated', 'banks', 'believe',
+'billion', 'blood', 'brain', 'built', 'cadre', 'cancer', 'candida',
+'case', 'chastity'.
+With the Lasso: 'ames', 'astro', 'astronomy', 'banks', 'best', 'cancer'.
+The ground truth is not available to us,
+but intuitively it looks like the false positives proportion is the same in both groups,
+and the centroids have a few more discoveries than the Lasso.
+SNB gives results on par with centroids,
+and we suspect text data to be particularly suited to these estimators.
+\begin{remark}
+    Even though the Lasso has a squared loss,
+    it is actually adapted to feature selection for classification problems.
+    In that case, a logistic regressor would not lead to a higher power.
+\end{remark}
+
 \section{FDR control on genetic data}\label{sec:genetic_data}
 
 We experiment the high-dimensional knockoff selection pipeline
@@ -85,7 +106,7 @@ which contains the gene expression levels of thousands of patients,
 along with characteristics regarding their medical conditions.
 We extract healthy patients,
 and those who suffer from lung cancer.
-We end up with roughly $2\,500$ patients and $35\,000$ features.
+We end up with roughly $2\,500$ patients and $35\,000$ features as shown in Table~\ref{tab:archs4_dataset}.
 Due to the large number of features,
 the tools developed in the previous chapters are particularly suited in this situation.
 \begin{table}[!htb]
@@ -93,8 +114,8 @@ the tools developed in the previous chapters are particularly suited in this sit
     \setlength{\tabcolsep}{2pt}
     {\small
         \begin{tabular}{|c|c|c|}\hline
-        \textbf{\# of samples} & \textbf{\# of features} & \textbf{N}\\ \hline
-        $2\,695$ & $35\,238$  & $13$\\ \hline
+        \textbf{\# of samples} & \textbf{\# of features} & \textbf{null elements}\\ \hline
+        $2\,695$ & $35\,238$ & $\approx 6 \cdot 10^{-4}\%$\\ \hline
         \end{tabular}
     }%
     \caption[short]{
@@ -103,3 +124,25 @@ the tools developed in the previous chapters are particularly suited in this sit
     \label{tab:archs4_dataset}
 \end{table}
 
+Building the factor model $\cove = D + U \Lambda U^\top$ with $k = 30$ takes approximately $2$ minutes
+by computing the singular value decomposition of $X$.
+As mentioned in Subsection~\ref{subsec:factor_model},
+this step could be done much faster with randomized algorithms.
+We run the version $\cO\left( n_\text{iters} \cdot p \cdot k^3 \right)$
+of Algorithm~\ref{alg:low_rank_coordinate_ascent} with a conservative tolerance threshold.
+We have of course no way to check (with a reasonable amount of resources) if the solution that is returned is good.
+But we are guaranteed that the solution is feasible as shown in Subsection~\ref{subsec:low_rank_sdp}.
+We also find that $\sum_{j = 1}^p s_j = 37701.65$ which is a satisfying value because
+we observed empirically on smaller experiments that
+the optimal value of the objective is never much larger than the dimension $p$.
+Generating the knockoff matrix and computing the statistics described in Section~\ref{sec:other_fast_statistics}
+requires less than $10$ seconds.
+In the end, we make $51$ discoveries with an FDR threshold $q = 0.1$.
+We obtain nearly the same number of discoveries in the same amount of time with SNB (Section~\ref{sec:snb}).
+As we don't have the ground truth,
+evaluating the actual FDP and power is a hard task (and may even be impossible).
+There exist biological databases summarizing all the well-established attributes of the human genes.
+Thus it is possible to compare the discoveries to these compilations of knowledge
+and estimate the FDR and power.
+But this task is cumbersome and error-prone as we are not specialists in biology,
+so we decided to reserve this for a future work.

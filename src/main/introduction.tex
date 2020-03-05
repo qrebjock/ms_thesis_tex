@@ -17,7 +17,7 @@ However, in the past two decades, acquiring massive amounts of data has become i
 and it is now frequent that datasets contain several dozens of thousands of features.
 A common practice is to measure as many variables as possible,
 and figure out afterwards which of them prove to be valuable.
-On top of that, measuring covariates is often simpler than labeling samples with the right category,
+On top of that, measuring covariates is often simpler than labeling samples with the right categories,
 as the latter requires human efforts and can hardly be automatized.
 For that reason, many datasets have more features than samples
 and it is especially the case in some fields like biology~\citep{statistical_inference_genome},
@@ -27,7 +27,7 @@ The Benjamini–Hochberg procedure requires estimates of independent $p$-values 
 which rapidly becomes hard when the dimension increases,
 or may even be impossible.
 
-Recently~\citet{fixed_x_knockoffs} introduced the knockoffs framework,
+Recently~\citet{fixed_x_knockoffs} introduced the knockoff framework,
 which is a set of procedures capable of performing feature selection,
 and that are proven to theoretically control the false discovery rate under mere assumptions.
 The key idea is to build a knockoff (that is, fake) feature for each authentic feature,
@@ -50,8 +50,9 @@ We propose a coordinate ascent approach with low-rank approximations
 that both theoretically and experimentally scale well with the number of features.
 Regarding test statistics, recent feature selection models~\citep{sparse_naive_bayes, sparse_center_classifiers}
 empirically get close to the performances of the Lasso~\citep{lasso} at very cheap computational cost.
+We implement efficiently these algorithms in a publicly available Python package.
 In the end, we are able to apply the knockoff framework
-in a linear time complexity with respect to the number of dimension.
+in a linear time complexity with respect to the number of dimensions.
 
 This master thesis is organized as follows.
 Chapter~\ref{ch:fs} introduces the concepts of feature selection and

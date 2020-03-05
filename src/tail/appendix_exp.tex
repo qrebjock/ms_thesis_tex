@@ -28,7 +28,7 @@ We restrained the parameter $p$ for MOSEK as it didn't scale as well as SCS\@.
 \end{table}
 For each $p$, 5 replications were performed with matrices of the form $M = D + U \Lambda U^\top$ where $D$ is diagonal,
 $\diag D \sim \cU\left[ 0,\, 1 \right]$, $U \in \R^{p \times k}$ for $k = 1,\, 5,\, 10,\, 20,\, 50$
-are orthonormal random matrices, and $\Lambda \in \R^{k \times k}$ is diagonal and
+are orthonormal random matrices, and $\Lambda \in \R^{k \times k}$ is diagonal such that
 $\diag \Lambda^2 \sim \cU\left[ 0,\, 1 \right]$.
 No significant difference was measured when changing $k$, even for large values.
 The convergence is however much slower if $D$ is scaled up.
@@ -36,10 +36,11 @@ The convergence is however much slower if $D$ is scaled up.
 \section{Coordinate ascent}\label{sec:coordinate_ascent_data}
 
 The random data is generated using the same scheme presented in Section~\ref{sec:cvx_times} for SCS\@.
-As the method scales better, additional sizes $p = 4000,\, 8000$ and $16\,000$ are tested.
+As the method scales better, additional sizes $p = 4\,000,\, 8\,000$ and $16\,000$ are tested.
 We use a tolerance threshold of $10^{-6}$
 such that the obtained solution is very close to the one returned by SCS and MOSEK\@.
 In practice, very good solutions are attained much faster with a larger tolerance.
+Unlike with SCS and MOSEK, a huge difference is observed in the convergence time depending on the value of $k$.
 
 \section{Criteo data}\label{sec:criteo_data}
 
@@ -60,5 +61,5 @@ Collisions between categories are likely to happen,
 and even collisions between categories from different columns.
 We use
 $m = 2^{24} = 16\,777\,216$,
-and simple hash function,
-and only roughly half of the $2^{24}$ hash features were hit by the hash function.
+and a simple hash function.
+Only roughly half of the $2^{24}$ hash features were hit by the hash function.
